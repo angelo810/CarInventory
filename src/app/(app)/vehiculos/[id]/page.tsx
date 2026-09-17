@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { partConditionLabels, partStatusBadgeVariant, partStatusLabels, sourceVehicleStatusLabels } from "@/lib/labels";
+import { partConditionLabels, partStatusBadgeVariant, partStatusLabels } from "@/lib/labels";
 import { StatusSelect } from "./status-select";
 
 export default async function VehiculoDetailPage({ params }: { params: Promise<{ id: string }> }) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -57,37 +57,46 @@ export function SearchClient({ categories }: { categories: Category[] }) {
   const [status, setStatus] = useState<string>("AVAILABLE");
   const [results, setResults] = useState<PartTypeResult[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const params = useMemo(() => {
-    const p = new URLSearchParams();
-    if (q.trim()) p.set("q", q.trim());
-    if (categoryId !== "ALL") p.set("categoryId", categoryId);
-    if (status) p.set("status", status);
-    return p.toString();
-  }, [q, categoryId, status]);
+  const hasFilter = q.trim().length > 0 || categoryId !== "ALL";
 
-  useEffect(() => {
-    const hasFilter = q.trim() || categoryId !== "ALL";
-    if (!hasFilter) {
+  function scheduleSearch(nextQ: string, nextCategoryId: string, nextStatus: string) {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (!nextQ.trim() && nextCategoryId === "ALL") {
       setResults(null);
-      setSearched(false);
       return;
     }
 
     setLoading(true);
-    const timeout = setTimeout(() => {
-      fetch(`/api/search?${params}`)
+    debounceRef.current = setTimeout(() => {
+      const p = new URLSearchParams();
+      if (nextQ.trim()) p.set("q", nextQ.trim());
+      if (nextCategoryId !== "ALL") p.set("categoryId", nextCategoryId);
+      if (nextStatus) p.set("status", nextStatus);
+
+      fetch(`/api/search?${p.toString()}`)
         .then((res) => res.json())
-        .then((data) => {
-          setResults(data.results ?? []);
-          setSearched(true);
-        })
+        .then((data) => setResults(data.results ?? []))
         .finally(() => setLoading(false));
     }, 250);
+  }
 
-    return () => clearTimeout(timeout);
-  }, [params, q, categoryId]);
+  function updateQuery(value: string) {
+    setQ(value);
+    scheduleSearch(value, categoryId, status);
+  }
+
+  function updateCategory(value: string) {
+    setCategoryId(value);
+    scheduleSearch(q, value, status);
+  }
+
+  function updateStatus(value: string) {
+    setStatus(value);
+    scheduleSearch(q, categoryId, value);
+  }
 
   return (
     <div className="space-y-4">
@@ -98,7 +107,7 @@ export function SearchClient({ categories }: { categories: Category[] }) {
             <Input
               autoFocus
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => updateQuery(e.target.value)}
               placeholder="Ej: alternador corolla 2014, freno civic, MOT-000123…"
               className="pl-10 h-12 text-base"
             />
@@ -109,7 +118,7 @@ export function SearchClient({ categories }: { categories: Category[] }) {
           <div className="flex flex-wrap gap-3">
             <Select
               value={categoryId}
-              onValueChange={(value) => setCategoryId(value ?? "ALL")}
+              onValueChange={(value) => updateCategory(value ?? "ALL")}
               items={{ ALL: "Todas las categorías", ...Object.fromEntries(categories.map((c) => [c.id, c.name])) }}
             >
               <SelectTrigger className="w-[180px]">
@@ -126,7 +135,7 @@ export function SearchClient({ categories }: { categories: Category[] }) {
             </Select>
             <Select
               value={status}
-              onValueChange={(value) => setStatus(value ?? "AVAILABLE")}
+              onValueChange={(value) => updateStatus(value ?? "AVAILABLE")}
               items={Object.fromEntries(STATUS_OPTIONS.map((o) => [o.value, o.label]))}
             >
               <SelectTrigger className="w-[180px]">
@@ -144,7 +153,7 @@ export function SearchClient({ categories }: { categories: Category[] }) {
         </CardContent>
       </Card>
 
-      {searched && results && results.length === 0 && (
+      {hasFilter && results && results.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
           <PackageSearch className="size-10" />
           <p className="text-lg font-medium">No tenemos esa pieza</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { createExpense } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,17 +14,21 @@ type VehicleOption = { id: string; brand: string; model: string; year: number };
 
 export function ExpenseForm({ vehicles }: { vehicles: VehicleOption[] }) {
   const [state, formAction, isPending] = useActionState(createExpense, undefined);
+  const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
     if (state && !state.error) {
       toast.success("Gasto registrado");
+      // Remount the form (native + Select inputs) after a successful save.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFormKey((k) => k + 1);
     }
   }, [state]);
 
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <form action={formAction} className="space-y-4" key={state && !state.error ? Math.random() : "form"}>
+    <form action={formAction} className="space-y-4" key={formKey}>
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="category">Categoría</Label>

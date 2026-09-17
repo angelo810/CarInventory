@@ -24,10 +24,8 @@ export function SaleForm() {
   const [items, setItems] = useState<SaleItem[]>([]);
 
   useEffect(() => {
-    if (!query.trim()) {
-      setSuggestions([]);
-      return;
-    }
+    if (!query.trim()) return;
+
     const timeout = setTimeout(() => {
       fetch(`/api/parts/available?q=${encodeURIComponent(query)}`)
         .then((r) => r.json())
@@ -35,6 +33,11 @@ export function SaleForm() {
     }, 200);
     return () => clearTimeout(timeout);
   }, [query]);
+
+  function updateQuery(value: string) {
+    setQuery(value);
+    if (!value.trim()) setSuggestions([]);
+  }
 
   const total = useMemo(
     () => items.reduce((sum, i) => sum + (Number(i.priceSold) || 0), 0),
@@ -71,7 +74,7 @@ export function SaleForm() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => updateQuery(e.target.value)}
               placeholder="Buscar pieza disponible por nombre o SKU…"
               className="pl-9"
             />
