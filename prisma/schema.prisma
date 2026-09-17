@@ -1,0 +1,241 @@
+// Prisma schema — CarInventory
+// Sistema de inventario/ventas/finanzas para desarmaduria de vehiculos
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pg_trgm]
+}
+
+// ---------- Auth ----------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ---------- Vehiculos de origen ----------
+
+enum SourceVehicleStatus {
+  IN_PROGRESS // en proceso de desmantelaje
+  DISMANTLED // completamente desmantelado
+  ARCHIVED
+}
+
+model SourceVehicle {
+  id            String              @id @default(cuid())
+  brand         String
+  model         String
+  year          Int
+  engine        String?
+  vin           String?             @unique
+  purchaseDate  DateTime
+  purchaseCost  Decimal             @db.Decimal(12, 2)
+  condition     String?
+  status        SourceVehicleStatus @default(IN_PROGRESS)
+  notes         String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  parts    Part[]
+  expenses Expense[]
+
+  @@index([brand, model, year])
+}
+
+// ---------- Categorias ----------
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+
+  partTypes PartType[]
+}
+
+// ---------- Catalogo de piezas (tipo/modelo de pieza) ----------
+
+model PartType {
+  id          String   @id @default(cuid())
+  name        String
+  categoryId  String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category        Category            @relation(fields: [categoryId], references: [id])
+  compatibilities PartCompatibility[]
+  parts           Part[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, name: "PartType_name_trgm_idx")
+}
+
+model PartCompatibility {
+  id         String @id @default(cuid())
+  partTypeId String
+  brand      String
+  model      String
+  yearFrom   Int
+  yearTo     Int
+
+  partType PartType @relation(fields: [partTypeId], references: [id], onDelete: Cascade)
+
+  @@index([partTypeId])
+  @@index([brand, model])
+  @@index([brand(ops: raw("gin_trgm_ops"))], type: Gin, name: "PartCompat_brand_trgm_idx")
+  @@index([model(ops: raw("gin_trgm_ops"))], type: Gin, name: "PartCompat_model_trgm_idx")
+}
+
+// ---------- Piezas (unidad fisica en inventario) ----------
+
+enum PartCondition {
+  NEW
+  USED_GOOD
+  USED_FAIR
+  FOR_PARTS
+}
+
+enum PartStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  IN_REVIEW
+}
+
+model Part {
+  id              String        @id @default(cuid())
+  sku             String        @unique
+  partTypeId      String
+  sourceVehicleId String?
+  condition       PartCondition @default(USED_GOOD)
+  status          PartStatus    @default(AVAILABLE)
+  location        String?
+  cost            Decimal       @db.Decimal(12, 2) @default(0)
+  price           Decimal       @db.Decimal(12, 2)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  partType      PartType       @relation(fields: [partTypeId], references: [id])
+  sourceVehicle SourceVehicle? @relation(fields: [sourceVehicleId], references: [id])
+  photos        Photo[]
+  priceHistory  PriceHistory[]
+  saleItems     SaleItem[]
+
+  @@index([status])
+  @@index([partTypeId])
+  @@index([sourceVehicleId])
+  @@index([sku(ops: raw("gin_trgm_ops"))], type: Gin, name: "Part_sku_trgm_idx")
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  partId    String
+  url       String
+  createdAt DateTime @default(now())
+
+  part Part @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@index([partId])
+}
+
+model PriceHistory {
+  id        String   @id @default(cuid())
+  partId    String
+  oldPrice  Decimal  @db.Decimal(12, 2)
+  newPrice  Decimal  @db.Decimal(12, 2)
+  changedAt DateTime @default(now())
+
+  part Part @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@index([partId])
+}
+
+// ---------- Clientes y ventas ----------
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  idNumber  String? // cedula / RUC
+  createdAt DateTime @default(now())
+
+  sales Sale[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+  OTHER
+}
+
+model Sale {
+  id            String        @id @default(cuid())
+  customerId    String?
+  saleDate      DateTime      @default(now())
+  paymentMethod PaymentMethod @default(CASH)
+  totalAmount   Decimal       @db.Decimal(12, 2)
+  notes         String?
+  createdAt     DateTime      @default(now())
+
+  customer Customer?  @relation(fields: [customerId], references: [id])
+  items    SaleItem[]
+
+  @@index([saleDate])
+  @@index([customerId])
+}
+
+model SaleItem {
+  id          String  @id @default(cuid())
+  saleId      String
+  partId      String
+  priceSold   Decimal @db.Decimal(12, 2)
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  part Part @relation(fields: [partId], references: [id])
+
+  @@index([saleId])
+  @@index([partId])
+}
+
+// ---------- Finanzas ----------
+
+enum ExpenseCategory {
+  DISMANTLING_LABOR
+  TRANSPORT
+  WAREHOUSE
+  UTILITIES
+  TOOLS
+  OTHER
+}
+
+model Expense {
+  id              String          @id @default(cuid())
+  category        ExpenseCategory
+  description     String
+  amount          Decimal         @db.Decimal(12, 2)
+  date            DateTime        @default(now())
+  sourceVehicleId String?
+  createdAt       DateTime        @default(now())
+
+  sourceVehicle SourceVehicle? @relation(fields: [sourceVehicleId], references: [id])
+
+  @@index([date])
+  @@index([category])
+  @@index([sourceVehicleId])
+}
