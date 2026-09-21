@@ -72,10 +72,10 @@ export async function getTopSellingParts(limit = 5) {
     include: { part: { include: { partType: true } } },
   });
 
-  const totals = new Map<string, { name: string; count: number; revenue: number }>();
+  const totals = new Map<string, { id: string; name: string; count: number; revenue: number }>();
   for (const item of items) {
     const key = item.part.partType.id;
-    const entry = totals.get(key) ?? { name: item.part.partType.name, count: 0, revenue: 0 };
+    const entry = totals.get(key) ?? { id: key, name: item.part.partType.name, count: 0, revenue: 0 };
     entry.count += 1;
     entry.revenue += Number(item.priceSold);
     totals.set(key, entry);
@@ -84,4 +84,79 @@ export async function getTopSellingParts(limit = 5) {
   return Array.from(totals.values())
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, limit);
+}
+
+export type VehicleRow = {
+  id: string;
+  name: string;
+  year: number;
+  pieces: number;
+  revenue: number;
+  cost: number;
+  profit: number;
+};
+
+// Ingresos por vehículo (suma de todo lo vendido de sus piezas) en un rango de fechas opcional.
+export async function getVehicleProfitability(range?: { from?: Date; to?: Date }) {
+  const dateFilter =
+    range?.from || range?.to ? { saleDate: { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } } : {};
+
+  const [vehicles, items, expenses] = await Promise.all([
+    prisma.sourceVehicle.findMany({ orderBy: [{ brand: "asc" }, { model: "asc" }] }),
+    prisma.saleItem.findMany({
+      where: { sale: dateFilter },
+      select: { priceSold: true, part: { select: { sourceVehicleId: true } } },
+    }),
+    prisma.expense.groupBy({ by: ["sourceVehicleId"], _sum: { amount: true } }),
+  ]);
+
+  const expenseByVehicle = new Map(expenses.map((e) => [e.sourceVehicleId, Number(e._sum.amount ?? 0)]));
+  const agg = new Map<string, { pieces: number; revenue: number }>();
+  let unassigned = { pieces: 0, revenue: 0 };
+  for (const it of items) {
+    const id = it.part.sourceVehicleId;
+    const price = Number(it.priceSold);
+    if (!id) {
+      unassigned = { pieces: unassigned.pieces + 1, revenue: unassigned.revenue + price };
+      continue;
+    }
+    const a = agg.get(id) ?? { pieces: 0, revenue: 0 };
+    a.pieces += 1;
+    a.revenue += price;
+    agg.set(id, a);
+  }
+
+  const rows: VehicleRow[] = vehicles.map((v) => {
+    const a = agg.get(v.id) ?? { pieces: 0, revenue: 0 };
+    const cost = Number(v.purchaseCost) + (expenseByVehicle.get(v.id) ?? 0);
+    return {
+      id: v.id,
+      name: `${v.brand} ${v.model}`,
+      year: v.year,
+      pieces: a.pieces,
+      revenue: a.revenue,
+      cost,
+      profit: a.revenue - cost,
+    };
+  });
+
+  return { rows, unassigned };
+}
+
+export async function getVehicleSales(vehicleId: string, range?: { from?: Date; to?: Date }) {
+  const dateFilter =
+    range?.from || range?.to ? { saleDate: { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } } : {};
+  const items = await prisma.saleItem.findMany({
+    where: { part: { sourceVehicleId: vehicleId }, sale: dateFilter },
+    include: { part: { include: { partType: true } }, sale: { include: { employee: true } } },
+    orderBy: { sale: { saleDate: "desc" } },
+  });
+  return items.map((i) => ({
+    id: i.id,
+    date: i.sale.saleDate,
+    name: i.part.partType.name,
+    zone: i.part.partType.zone,
+    employee: i.sale.employee?.name ?? null,
+    price: Number(i.priceSold),
+  }));
 }

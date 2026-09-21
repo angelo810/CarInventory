@@ -1,0 +1,3272 @@
+[
+ {
+  "name": "Agarradera del techo delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 0
+ },
+ {
+  "name": "Agarradera del techo delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 1
+ },
+ {
+  "name": "Agarradera del techo posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 2
+ },
+ {
+  "name": "Agarradera del techo posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 3
+ },
+ {
+  "name": "Alfombra cajuela central",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 4
+ },
+ {
+  "name": "Alfombra cajuela o plastico LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 5
+ },
+ {
+  "name": "Alfombra cajuela o plastico RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 6
+ },
+ {
+  "name": "Alfombra cobertor piso",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 7
+ },
+ {
+  "name": "Alfombra piso",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 8
+ },
+ {
+  "name": "Amortiguador compuerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 9
+ },
+ {
+  "name": "Amortiguador compuerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 10
+ },
+ {
+  "name": "Ancla visera de sol LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 11
+ },
+ {
+  "name": "Ancla visera de sol RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 12
+ },
+ {
+  "name": "Apoyabrazos",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 13
+ },
+ {
+  "name": "Asiento delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 14
+ },
+ {
+  "name": "Asiento delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 15
+ },
+ {
+  "name": "Barra de sonido",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 16
+ },
+ {
+  "name": "Barras de apertura cajuela",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 17
+ },
+ {
+  "name": "Base computadora",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 18
+ },
+ {
+  "name": "Bloqueo de volante swicth",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 19
+ },
+ {
+  "name": "Boton apertura compuerta posterior",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 20
+ },
+ {
+  "name": "Boton apertura tapa de combustible",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 21
+ },
+ {
+  "name": "Boton de encendido",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 22
+ },
+ {
+  "name": "Boton de neblineros",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 23
+ },
+ {
+  "name": "Boton de seguros",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 24
+ },
+ {
+  "name": "Boton luces de parqueo",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 25
+ },
+ {
+  "name": "Brazo compuerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 26
+ },
+ {
+  "name": "Brazo compuerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 27
+ },
+ {
+  "name": "Cabecera asiento delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 28
+ },
+ {
+  "name": "Cabecera asiento delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 29
+ },
+ {
+  "name": "Cabeceras asiento posterior x3",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 30
+ },
+ {
+  "name": "Calefactor cuerpo",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 31
+ },
+ {
+  "name": "Caucho cajuela",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 32
+ },
+ {
+  "name": "Caucho carrocería puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 33
+ },
+ {
+  "name": "Caucho carrocería puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 34
+ },
+ {
+  "name": "Caucho carrocería puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 35
+ },
+ {
+  "name": "Caucho carrocería puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 36
+ },
+ {
+  "name": "Caucho de carrocería LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 37
+ },
+ {
+  "name": "Caucho de carrocería RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 38
+ },
+ {
+  "name": "Caucho interno vidrio puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 39
+ },
+ {
+  "name": "Caucho interno vidrio puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 40
+ },
+ {
+  "name": "Caucho interno vidrio puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 41
+ },
+ {
+  "name": "Caucho interno vidrio puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 42
+ },
+ {
+  "name": "Caucho puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 43
+ },
+ {
+  "name": "Caucho puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 44
+ },
+ {
+  "name": "Caucho puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 45
+ },
+ {
+  "name": "Caucho puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 46
+ },
+ {
+  "name": "Cenicero",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 47
+ },
+ {
+  "name": "Cenicero posterior",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 48
+ },
+ {
+  "name": "Cinturon de seguridad delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 49
+ },
+ {
+  "name": "Cinturon de seguridad delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 50
+ },
+ {
+  "name": "Cinturon posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 51
+ },
+ {
+  "name": "Cinturon posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 52
+ },
+ {
+  "name": "Cinturones posteriores hembras x3",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 53
+ },
+ {
+  "name": "Columna de direccion",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 54
+ },
+ {
+  "name": "Consola central moldura plastica de la palanca",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 55
+ },
+ {
+  "name": "Control de encendido llave",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 56
+ },
+ {
+  "name": "Cubre manija delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 57
+ },
+ {
+  "name": "Cubre manija delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 58
+ },
+ {
+  "name": "Cubre manija posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 59
+ },
+ {
+  "name": "Cubre manija posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 60
+ },
+ {
+  "name": "Elevavidrio electrico delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 61
+ },
+ {
+  "name": "Elevavidrio electrico delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 62
+ },
+ {
+  "name": "Elevavidrio electrico posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 63
+ },
+ {
+  "name": "Elevavidrio electrico posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 64
+ },
+ {
+  "name": "Elevavidrio mecanico delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 65
+ },
+ {
+  "name": "Elevavidrio mecanico delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 66
+ },
+ {
+  "name": "Elevavidrio mecanico posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 67
+ },
+ {
+  "name": "Elevavidrio mecanico posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 68
+ },
+ {
+  "name": "Encendedor de cigarros",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 69
+ },
+ {
+  "name": "Espejo retrovisor central",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 70
+ },
+ {
+  "name": "Forros asientos",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 71
+ },
+ {
+  "name": "Freno de mano con forro",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 72
+ },
+ {
+  "name": "Guantera",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 73
+ },
+ {
+  "name": "Guia asiento posterior cilindro LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 74
+ },
+ {
+  "name": "Guia asiento posterior cilindro RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 75
+ },
+ {
+  "name": "Guia seguros de puerta plastico delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 76
+ },
+ {
+  "name": "Guia seguros de puerta plastico delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 77
+ },
+ {
+  "name": "Guia seguros de puerta plastico posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 78
+ },
+ {
+  "name": "Guia seguros de puerta plastico posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 79
+ },
+ {
+  "name": "Guias asiento delantero LH x2",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 80
+ },
+ {
+  "name": "Guias asiento delantero RH x2",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 81
+ },
+ {
+  "name": "Guias asiento posterior x2",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 82
+ },
+ {
+  "name": "Hembra cinturon delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 83
+ },
+ {
+  "name": "Hembra cinturon delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 84
+ },
+ {
+  "name": "Jaladera puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 85
+ },
+ {
+  "name": "Jaladera puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 86
+ },
+ {
+  "name": "Jaladera puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 87
+ },
+ {
+  "name": "Jaladera puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 88
+ },
+ {
+  "name": "Juego de asientos posteriores x2",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 89
+ },
+ {
+  "name": "Juego de llaves + gata",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 90
+ },
+ {
+  "name": "Lamevidrios interno puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 91
+ },
+ {
+  "name": "Lamevidrios interno puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 92
+ },
+ {
+  "name": "Lamevidrios interno puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 93
+ },
+ {
+  "name": "Lamevidrios interno puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 94
+ },
+ {
+  "name": "Llave",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 95
+ },
+ {
+  "name": "Luz cajuela x1",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 96
+ },
+ {
+  "name": "Luz de salon x1",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 97
+ },
+ {
+  "name": "Mando de luces y direccionales",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 98
+ },
+ {
+  "name": "Mando de plumas",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 99
+ },
+ {
+  "name": "Mando elevavidrio electrico delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 100
+ },
+ {
+  "name": "Mando elevavidrio electrico delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 101
+ },
+ {
+  "name": "Mando elevavidrio electrico posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 102
+ },
+ {
+  "name": "Mando elevavidrio electrico posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 103
+ },
+ {
+  "name": "Mando espejos electricos",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 104
+ },
+ {
+  "name": "Mando solo luces",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 105
+ },
+ {
+  "name": "Mandos del aire calefaccion",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 106
+ },
+ {
+  "name": "Mandos del volante",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 107
+ },
+ {
+  "name": "Manija interna puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 108
+ },
+ {
+  "name": "Manija interna puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 109
+ },
+ {
+  "name": "Manija interna puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 110
+ },
+ {
+  "name": "Manija interna puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 111
+ },
+ {
+  "name": "Mascarrilla consola central",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 112
+ },
+ {
+  "name": "Modulo direccion electronica",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 113
+ },
+ {
+  "name": "Modulo UCH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 114
+ },
+ {
+  "name": "Moldura cajuela posterior interna",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 115
+ },
+ {
+  "name": "Moldura cubre chapa compuerta posterior",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 116
+ },
+ {
+  "name": "Moldura cubre pernos asientos delantero LH x3",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 117
+ },
+ {
+  "name": "Moldura cubre pernos asientos delantero RH x3",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 118
+ },
+ {
+  "name": "Moldura cubre tacometro",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 119
+ },
+ {
+  "name": "Moldura cubre tacometro mica",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 120
+ },
+ {
+  "name": "Moldura parlante palomera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 121
+ },
+ {
+  "name": "Moldura parlante palomera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 122
+ },
+ {
+  "name": "Moldura parlante puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 123
+ },
+ {
+  "name": "Moldura parlante puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 124
+ },
+ {
+  "name": "Moldura parlante puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 125
+ },
+ {
+  "name": "Moldura parlante puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 126
+ },
+ {
+  "name": "Moldura parlante tablero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 127
+ },
+ {
+  "name": "Moldura parlante tablero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 128
+ },
+ {
+  "name": "Moldura pisa pies puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 129
+ },
+ {
+  "name": "Moldura pisa pies puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 130
+ },
+ {
+  "name": "Moldura pisa pies puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 131
+ },
+ {
+  "name": "Moldura pisa pies puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 132
+ },
+ {
+  "name": "Moldura plastica brazo compuerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 133
+ },
+ {
+  "name": "Moldura plastica brazo compuerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 134
+ },
+ {
+  "name": "Moldura plastica delantera inferior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 135
+ },
+ {
+  "name": "Moldura plastica delantera inferior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 136
+ },
+ {
+  "name": "Moldura plastica parante central inferior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 137
+ },
+ {
+  "name": "Moldura plastica parante central inferior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 138
+ },
+ {
+  "name": "Moldura plastica parante central superior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 139
+ },
+ {
+  "name": "Moldura plastica parante central superior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 140
+ },
+ {
+  "name": "Moldura plastica parante delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 141
+ },
+ {
+  "name": "Moldura plastica parante delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 142
+ },
+ {
+  "name": "Moldura plastica parante posterior inferior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 143
+ },
+ {
+  "name": "Moldura plastica parante posterior inferior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 144
+ },
+ {
+  "name": "Moldura plastica parante posterior superior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 145
+ },
+ {
+  "name": "Moldura plastica parante posterior superior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 146
+ },
+ {
+  "name": "Moldura tapiceria delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 147
+ },
+ {
+  "name": "Moldura tapiceria delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 148
+ },
+ {
+  "name": "Moldura tapiceria posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 149
+ },
+ {
+  "name": "Moldura tapiceria posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 150
+ },
+ {
+  "name": "Moquetas x2",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 151
+ },
+ {
+  "name": "Motor apertura de seguro compuerta posterior",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 152
+ },
+ {
+  "name": "Motor apertura de seguros puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 153
+ },
+ {
+  "name": "Motor apertura de seguros puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 154
+ },
+ {
+  "name": "Motor apertura de seguros puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 155
+ },
+ {
+  "name": "Motor apertura de seguros puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 156
+ },
+ {
+  "name": "Motor del calefactor",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 157
+ },
+ {
+  "name": "Palanca apertura capot",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 158
+ },
+ {
+  "name": "Palanca apertura compuerta posterior",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 159
+ },
+ {
+  "name": "Palanca apertura tapa de combustible",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 160
+ },
+ {
+  "name": "Palanca de cambios completa",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 161
+ },
+ {
+  "name": "Palanca de la doble",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 162
+ },
+ {
+  "name": "Palanca desbloqueo freno de mano",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 163
+ },
+ {
+  "name": "Palanca elevavidrios delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 164
+ },
+ {
+  "name": "Palanca elevavidrios delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 165
+ },
+ {
+  "name": "Palanca elevavidrios posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 166
+ },
+ {
+  "name": "Palanca elevavidrios posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 167
+ },
+ {
+  "name": "Palancas o botones apertura asientos posteriores x2",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 168
+ },
+ {
+  "name": "Palomera",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 169
+ },
+ {
+  "name": "Parlantes 4",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 170
+ },
+ {
+  "name": "Pedal de acelerador",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 171
+ },
+ {
+  "name": "Pedal freno de mano",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 172
+ },
+ {
+  "name": "Pedalera de embrague",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 173
+ },
+ {
+  "name": "Pedalera freno",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 174
+ },
+ {
+  "name": "Portagafas",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 175
+ },
+ {
+  "name": "Portavasos x1",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 176
+ },
+ {
+  "name": "Radiador aire acondicionado calefactor",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 177
+ },
+ {
+  "name": "Radiador calefactor",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 178
+ },
+ {
+  "name": "Radio",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 179
+ },
+ {
+  "name": "Rejilla de calefacion del tablero central LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 180
+ },
+ {
+  "name": "Rejilla de calefacion del tablero central RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 181
+ },
+ {
+  "name": "Rejilla de calefacion del tablero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 182
+ },
+ {
+  "name": "Rejilla de calefacion del tablero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 183
+ },
+ {
+  "name": "Rejillas de calefaccion posteriores x#",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 184
+ },
+ {
+  "name": "Reloj",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 185
+ },
+ {
+  "name": "Resortes cajuela LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 186
+ },
+ {
+  "name": "Resortes cajuela RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 187
+ },
+ {
+  "name": "Seguro llanta de emergencia",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 188
+ },
+ {
+  "name": "Seguros de puerta plastico delantero LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 189
+ },
+ {
+  "name": "Seguros de puerta plastico delantero RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 190
+ },
+ {
+  "name": "Seguros de puerta plastico posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 191
+ },
+ {
+  "name": "Seguros de puerta plastico posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 192
+ },
+ {
+  "name": "Sensor bloqueo central",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 193
+ },
+ {
+  "name": "Soporte computadora",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 194
+ },
+ {
+  "name": "Soporte UCH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 195
+ },
+ {
+  "name": "Tablero",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 196
+ },
+ {
+  "name": "Tacometro",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 197
+ },
+ {
+  "name": "Tapa airbag copiloto",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 198
+ },
+ {
+  "name": "Tapa cubre columna de direccion pies",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 199
+ },
+ {
+  "name": "Tapa de airbag volante",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 200
+ },
+ {
+  "name": "Tapa de fusibles",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 201
+ },
+ {
+  "name": "Tapa inferior columna direccion",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 202
+ },
+ {
+  "name": "Tapa plastica interior del retrovisor LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 203
+ },
+ {
+  "name": "Tapa plastica interior del retrovisor RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 204
+ },
+ {
+  "name": "Tapa superior columna direccion",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 205
+ },
+ {
+  "name": "Tapiceria puerta delantera LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 206
+ },
+ {
+  "name": "Tapiceria puerta delantera RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 207
+ },
+ {
+  "name": "Tapiceria puerta posterior LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 208
+ },
+ {
+  "name": "Tapiceria puerta posterior RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 209
+ },
+ {
+  "name": "Tapiceria techo",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 210
+ },
+ {
+  "name": "Tercer stop",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 211
+ },
+ {
+  "name": "Visera de sol LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 212
+ },
+ {
+  "name": "Visera de sol RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 213
+ },
+ {
+  "name": "Volante",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 214
+ },
+ {
+  "name": "Moldura plastica parante central una sola pieza RH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 215
+ },
+ {
+  "name": "Moldura plastica parante central una sola pieza LH",
+  "zone": "INTERIOR",
+  "kept": true,
+  "sortOrder": 216
+ },
+ {
+  "name": "Alternador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 0
+ },
+ {
+  "name": "Amortiguador delantero LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 1
+ },
+ {
+  "name": "Amortiguador delantero RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 2
+ },
+ {
+  "name": "Amortiguador posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 3
+ },
+ {
+  "name": "Amortiguador posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 4
+ },
+ {
+  "name": "Araña + manzana delantera LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 5
+ },
+ {
+  "name": "Araña + manzana delantera RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 6
+ },
+ {
+  "name": "Araña + manzana posterior LH (con sensor de ABS)",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 7
+ },
+ {
+  "name": "Araña + manzana posterior RH (con sensor de ABS)",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 8
+ },
+ {
+  "name": "Arbol de levas x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 9
+ },
+ {
+  "name": "Arnes bomba de combustible",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 10
+ },
+ {
+  "name": "Arnes con fusiblera",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 11
+ },
+ {
+  "name": "Arnes de computadora",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 12
+ },
+ {
+  "name": "Barra estabilizadora delantera",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 13
+ },
+ {
+  "name": "Barra estabilizadora posterior",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 14
+ },
+ {
+  "name": "Barra link LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 15
+ },
+ {
+  "name": "Barra link RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 16
+ },
+ {
+  "name": "Base de la bateria",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 17
+ },
+ {
+  "name": "Base filtro de aceite",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 18
+ },
+ {
+  "name": "Bases de amortiguador x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 19
+ },
+ {
+  "name": "Bases de caja x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 20
+ },
+ {
+  "name": "Bases de motor x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 21
+ },
+ {
+  "name": "Bases del radiador x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 22
+ },
+ {
+  "name": "Bateria",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 23
+ },
+ {
+  "name": "Bielas x4",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 24
+ },
+ {
+  "name": "Block de motor cilindraje (1600)",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 25
+ },
+ {
+  "name": "Bobinas x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 26
+ },
+ {
+  "name": "Bocina alarma",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 27
+ },
+ {
+  "name": "Bomba de aceite",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 28
+ },
+ {
+  "name": "Bomba de agua",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 29
+ },
+ {
+  "name": "Bomba de combustible completa",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 30
+ },
+ {
+  "name": "Bomba de embrague x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 31
+ },
+ {
+  "name": "Bomba de freno",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 32
+ },
+ {
+  "name": "Bomba hidraulica direccion",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 33
+ },
+ {
+  "name": "Brazos de direccion 2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 34
+ },
+ {
+  "name": "Cabezote armado con valvulas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 35
+ },
+ {
+  "name": "Cable de acelerador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 36
+ },
+ {
+  "name": "Cable de embrague",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 37
+ },
+ {
+  "name": "Cable de tierra",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 38
+ },
+ {
+  "name": "Cable freno de mano central",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 39
+ },
+ {
+  "name": "Cable freno de mano LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 40
+ },
+ {
+  "name": "Cable freno de mano RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 41
+ },
+ {
+  "name": "Cables de bujias x4",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 42
+ },
+ {
+  "name": "Cables palanca de cambios",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 43
+ },
+ {
+  "name": "Caja de cambios",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 44
+ },
+ {
+  "name": "Caja portafusibles",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 45
+ },
+ {
+  "name": "Canister",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 46
+ },
+ {
+  "name": "Cañeria de embrague x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 47
+ },
+ {
+  "name": "Cañerias aire acondicionado x3",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 48
+ },
+ {
+  "name": "Cañerias de freno x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 49
+ },
+ {
+  "name": "Cardan eje delantero",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 50
+ },
+ {
+  "name": "Cardan eje posterior",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 51
+ },
+ {
+  "name": "Carter",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 52
+ },
+ {
+  "name": "Carter secundario",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 53
+ },
+ {
+  "name": "Catalizador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 54
+ },
+ {
+  "name": "Cauchos tubo de escape x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 55
+ },
+ {
+  "name": "Cigüeñal",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 56
+ },
+ {
+  "name": "Compresor aire acondicionado",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 57
+ },
+ {
+  "name": "Computadora motor",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 58
+ },
+ {
+  "name": "Contenedor liquido de plumas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 59
+ },
+ {
+  "name": "Contenedor liquido hidraulico",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 60
+ },
+ {
+  "name": "Contenedor liquido refrigerante",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 61
+ },
+ {
+  "name": "Cremallera de direccion",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 62
+ },
+ {
+  "name": "Cuerpo de aceleracion",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 63
+ },
+ {
+  "name": "Depurador de aire completo",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 64
+ },
+ {
+  "name": "Diferencial delantero",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 65
+ },
+ {
+  "name": "Diferencial posterior",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 66
+ },
+ {
+  "name": "Disco de freno delantero LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 67
+ },
+ {
+  "name": "Disco de freno delantero RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 68
+ },
+ {
+  "name": "Disco de freno posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 69
+ },
+ {
+  "name": "Disco de freno posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 70
+ },
+ {
+  "name": "Distribuidor de corriente",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 71
+ },
+ {
+  "name": "Eje delantero LH armado",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 72
+ },
+ {
+  "name": "Eje delantero RH armado",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 73
+ },
+ {
+  "name": "Eje posterior LH armado",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 74
+ },
+ {
+  "name": "Eje posterior RH armado",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 75
+ },
+ {
+  "name": "Electroventilador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 76
+ },
+ {
+  "name": "Espiral delantero LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 77
+ },
+ {
+  "name": "Espiral delantero RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 78
+ },
+ {
+  "name": "Espiral posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 79
+ },
+ {
+  "name": "Espiral posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 80
+ },
+ {
+  "name": "Flauta de inyectores",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 81
+ },
+ {
+  "name": "Fusiblera",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 82
+ },
+ {
+  "name": "Inyectores x4",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 83
+ },
+ {
+  "name": "Manguera de combustible x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 84
+ },
+ {
+  "name": "Manguera de freno delantera LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 85
+ },
+ {
+  "name": "Manguera de freno delantera RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 86
+ },
+ {
+  "name": "Manguera de freno posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 87
+ },
+ {
+  "name": "Manguera de freno posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 88
+ },
+ {
+  "name": "Manguera del depurador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 89
+ },
+ {
+  "name": "Manguera tanque de combustible llenado",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 90
+ },
+ {
+  "name": "Mangueras de canister x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 91
+ },
+ {
+  "name": "Mangueras de refrigerante x3",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 92
+ },
+ {
+  "name": "Mangueras hidraulicas x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 93
+ },
+ {
+  "name": "Mecanismo de plumas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 94
+ },
+ {
+  "name": "Medidor de aceite varilla",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 95
+ },
+ {
+  "name": "Mesa delantera LH x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 96
+ },
+ {
+  "name": "Mesa delantera RH x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 97
+ },
+ {
+  "name": "Mesa posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 98
+ },
+ {
+  "name": "Mesa posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 99
+ },
+ {
+  "name": "Modulo ABS",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 100
+ },
+ {
+  "name": "Mordaza de freno delantero LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 101
+ },
+ {
+  "name": "Mordaza de freno delantero RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 102
+ },
+ {
+  "name": "Mordaza de freno posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 103
+ },
+ {
+  "name": "Mordaza de freno posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 104
+ },
+ {
+  "name": "Motor de arranque",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 105
+ },
+ {
+  "name": "Motor de plumas delantero",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 106
+ },
+ {
+  "name": "Motor de plumas posterior",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 107
+ },
+ {
+  "name": "Motor liquido de plumas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 108
+ },
+ {
+  "name": "Multiple de admision",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 109
+ },
+ {
+  "name": "Multiple de escape",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 110
+ },
+ {
+  "name": "Paquetes x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 111
+ },
+ {
+  "name": "Pernos cabezote x8",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 112
+ },
+ {
+  "name": "Pernos cuna x4",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 113
+ },
+ {
+  "name": "Pernos puente x4",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 114
+ },
+ {
+  "name": "Pistones x4",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 115
+ },
+ {
+  "name": "Pito",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 116
+ },
+ {
+  "name": "Polea arbol de levas x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 117
+ },
+ {
+  "name": "Polea banda de accesorios",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 118
+ },
+ {
+  "name": "Polea cigüeñal",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 119
+ },
+ {
+  "name": "Polea ventilador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 120
+ },
+ {
+  "name": "Propulsores x 8",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 121
+ },
+ {
+  "name": "Protector multiple de escape x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 122
+ },
+ {
+  "name": "Puente eje posterior",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 123
+ },
+ {
+  "name": "Punta posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 124
+ },
+ {
+  "name": "Punta posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 125
+ },
+ {
+  "name": "Radiador del motor",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 126
+ },
+ {
+  "name": "Radiador del motor AC",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 127
+ },
+ {
+  "name": "Sensor ABS llanta delantera LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 128
+ },
+ {
+  "name": "Sensor ABS llanta delantera RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 129
+ },
+ {
+  "name": "Sensor ABS llanta posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 130
+ },
+ {
+  "name": "Sensor ABS llanta posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 131
+ },
+ {
+  "name": "Sensor arbol de levas CMP",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 132
+ },
+ {
+  "name": "Sensor CKP",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 133
+ },
+ {
+  "name": "Sensor de oxigeno x1",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 134
+ },
+ {
+  "name": "Sensor de presion de aceite",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 135
+ },
+ {
+  "name": "Sensor de temperatura x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 136
+ },
+ {
+  "name": "Sensor de velocidad caja de cambios",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 137
+ },
+ {
+  "name": "Sensor maf",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 138
+ },
+ {
+  "name": "Sensor MAP",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 139
+ },
+ {
+  "name": "Sensor multiple de admision",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 140
+ },
+ {
+  "name": "Sensor TPS",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 141
+ },
+ {
+  "name": "Servo freno",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 142
+ },
+ {
+  "name": "Silenciador bala",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 143
+ },
+ {
+  "name": "Silenciador tubo de escape",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 144
+ },
+ {
+  "name": "Soporte caña volante",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 145
+ },
+ {
+  "name": "Soporte de alternador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 146
+ },
+ {
+  "name": "Soporte de bomba hidraulica",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 147
+ },
+ {
+  "name": "Soporte de compresor",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 148
+ },
+ {
+  "name": "Tambor de freno LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 149
+ },
+ {
+  "name": "Tambor de freno RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 150
+ },
+ {
+  "name": "Tanque de combustible",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 151
+ },
+ {
+  "name": "Tapa de aceite",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 152
+ },
+ {
+  "name": "Tapa del cigüeñal",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 153
+ },
+ {
+  "name": "Tapa distribuidor de corriente",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 154
+ },
+ {
+  "name": "Tapa reservorio refrigerante",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 155
+ },
+ {
+  "name": "Tapa valvulas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 156
+ },
+ {
+  "name": "Tapas de motor x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 157
+ },
+ {
+  "name": "Tapas distribucion x2",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 158
+ },
+ {
+  "name": "Toma aire depurador",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 159
+ },
+ {
+  "name": "Toma del termostato",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 160
+ },
+ {
+  "name": "Torre de arbol de levas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 161
+ },
+ {
+  "name": "Tranfer",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 162
+ },
+ {
+  "name": "Trompo de retro",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 163
+ },
+ {
+  "name": "Tubo de escape completo toma multiple",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 164
+ },
+ {
+  "name": "Tubo refrigerante",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 165
+ },
+ {
+  "name": "Turbo",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 166
+ },
+ {
+  "name": "Valvula check tapa valvulas",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 167
+ },
+ {
+  "name": "Valvula de aire cuerpo de aceleracion",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 168
+ },
+ {
+  "name": "Valvula de freno posterior LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 169
+ },
+ {
+  "name": "Valvula de freno posterior principal",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 170
+ },
+ {
+  "name": "Valvula de freno posterior RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 171
+ },
+ {
+  "name": "Valvula IAC",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 172
+ },
+ {
+  "name": "Valvula reguladora combustible",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 173
+ },
+ {
+  "name": "Valvula servofreno",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 174
+ },
+ {
+  "name": "Valvula VVTI",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 175
+ },
+ {
+  "name": "Valvulas turbo #x",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 176
+ },
+ {
+  "name": "Volante de inercia",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 177
+ },
+ {
+  "name": "Zapatas + cilindros LH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 178
+ },
+ {
+  "name": "Zapatas + cilindros RH",
+  "zone": "MECHANICAL",
+  "kept": true,
+  "sortOrder": 179
+ },
+ {
+  "name": "Aleron",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 0
+ },
+ {
+  "name": "Antena",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 1
+ },
+ {
+  "name": "Barra soporte capot",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 2
+ },
+ {
+  "name": "Bisagra puertas x4",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 3
+ },
+ {
+  "name": "Boton apertura cajuela",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 4
+ },
+ {
+  "name": "Brazo de pluma delantero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 5
+ },
+ {
+  "name": "Brazo de pluma delantero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 6
+ },
+ {
+  "name": "Brazo de pluma posterior",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 7
+ },
+ {
+  "name": "Cajuela o compuerta",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 8
+ },
+ {
+  "name": "Capot",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 9
+ },
+ {
+  "name": "Carpa cubre balde",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 10
+ },
+ {
+  "name": "Caucho parabrisas delantero",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 11
+ },
+ {
+  "name": "Caucho parabrisas posterior",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 12
+ },
+ {
+  "name": "Cauchos arnes puertas x2",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 13
+ },
+ {
+  "name": "Cerradura cajuela o compuerta",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 14
+ },
+ {
+  "name": "Cerradura capot",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 15
+ },
+ {
+  "name": "Cerradura puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 16
+ },
+ {
+  "name": "Cerradura puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 17
+ },
+ {
+  "name": "Cerradura puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 18
+ },
+ {
+  "name": "Cerradura puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 19
+ },
+ {
+  "name": "Chasis",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 20
+ },
+ {
+  "name": "Cilindro apertura cajuela",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 21
+ },
+ {
+  "name": "Compacto delantero + torre LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 22
+ },
+ {
+  "name": "Compacto delantero + torre RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 23
+ },
+ {
+  "name": "Costado delantero inferior LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 24
+ },
+ {
+  "name": "Costado delantero inferior RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 25
+ },
+ {
+  "name": "Costado posterior guardafango LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 26
+ },
+ {
+  "name": "Costado posterior guardafango RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 27
+ },
+ {
+  "name": "Cubre lluvia puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 28
+ },
+ {
+  "name": "Cubre lluvia puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 29
+ },
+ {
+  "name": "Cubre lluvia puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 30
+ },
+ {
+  "name": "Cubre lluvia puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 31
+ },
+ {
+  "name": "Cubre visagra capot LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 32
+ },
+ {
+  "name": "Cubre visagra capot RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 33
+ },
+ {
+  "name": "Cuna",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 34
+ },
+ {
+  "name": "Faldon lateral LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 35
+ },
+ {
+  "name": "Faldon lateral RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 36
+ },
+ {
+  "name": "Faro de cajuela o compuerta LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 37
+ },
+ {
+  "name": "Faro de cajuela o compuerta RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 38
+ },
+ {
+  "name": "Faro delantero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 39
+ },
+ {
+  "name": "Faro delantero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 40
+ },
+ {
+  "name": "Faro posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 41
+ },
+ {
+  "name": "Faro posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 42
+ },
+ {
+  "name": "Foco direccional guardafango LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 43
+ },
+ {
+  "name": "Foco direccional guardafango RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 44
+ },
+ {
+  "name": "Ganchos de remolque delanteros x2",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 45
+ },
+ {
+  "name": "Ganchos de remolque posteriores x1",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 46
+ },
+ {
+  "name": "Guardachoque delantero",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 47
+ },
+ {
+  "name": "Guardachoque posterior",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 48
+ },
+ {
+  "name": "Guardafango LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 49
+ },
+ {
+  "name": "Guardafango RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 50
+ },
+ {
+  "name": "Guardapolvos delantero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 51
+ },
+ {
+  "name": "Guardapolvos delantero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 52
+ },
+ {
+  "name": "Guardapolvos posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 53
+ },
+ {
+  "name": "Guardapolvos posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 54
+ },
+ {
+  "name": "Guia posterior guardachoque LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 55
+ },
+ {
+  "name": "Guia posterior guardachoque RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 56
+ },
+ {
+  "name": "Guias de placas x2",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 57
+ },
+ {
+  "name": "Juego de aros x4 lata rin 15",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 58
+ },
+ {
+  "name": "Juego de aros x4 modelo sport",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 59
+ },
+ {
+  "name": "Lamevidrios externo puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 60
+ },
+ {
+  "name": "Lamevidrios externo puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 61
+ },
+ {
+  "name": "Lamevidrios externo puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 62
+ },
+ {
+  "name": "Lamevidrios externo puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 63
+ },
+ {
+  "name": "Llanta de emergencia + aro rin 13",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 64
+ },
+ {
+  "name": "Llantas rin 15 x4",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 65
+ },
+ {
+  "name": "Llorones capot x2",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 66
+ },
+ {
+  "name": "Llorones posterior",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 67
+ },
+ {
+  "name": "Manija puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 68
+ },
+ {
+  "name": "Manija puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 69
+ },
+ {
+  "name": "Manija puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 70
+ },
+ {
+  "name": "Manija puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 71
+ },
+ {
+  "name": "Mascarilla delantera",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 72
+ },
+ {
+  "name": "Moldura cajuela o compuerta",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 73
+ },
+ {
+  "name": "Moldura capot",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 74
+ },
+ {
+  "name": "Moldura de neblinero parachoques delantero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 75
+ },
+ {
+  "name": "Moldura de neblinero parachoques delantero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 76
+ },
+ {
+  "name": "Moldura de techo LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 77
+ },
+ {
+  "name": "Moldura de techo RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 78
+ },
+ {
+  "name": "Moldura guarfango delantero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 79
+ },
+ {
+  "name": "Moldura guarfango delantero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 80
+ },
+ {
+  "name": "Moldura guarfango posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 81
+ },
+ {
+  "name": "Moldura guarfango posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 82
+ },
+ {
+  "name": "Moldura porta placa delantera",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 83
+ },
+ {
+  "name": "Moldura porta placa posterior",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 84
+ },
+ {
+  "name": "Moldura puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 85
+ },
+ {
+  "name": "Moldura puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 86
+ },
+ {
+  "name": "Moldura puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 87
+ },
+ {
+  "name": "Moldura puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 88
+ },
+ {
+  "name": "Molduras contorno vidrios LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 89
+ },
+ {
+  "name": "Molduras contorno vidrios RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 90
+ },
+ {
+  "name": "Neblinero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 91
+ },
+ {
+  "name": "Neblinero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 92
+ },
+ {
+  "name": "Parabrisas delantero",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 93
+ },
+ {
+  "name": "Parabrisas posterior",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 94
+ },
+ {
+  "name": "Parante central carrocería LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 95
+ },
+ {
+  "name": "Parante central carrocería RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 96
+ },
+ {
+  "name": "Parante parabrisas delantero carrocería LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 97
+ },
+ {
+  "name": "Parante parabrisas delantero carrocería RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 98
+ },
+ {
+  "name": "Parrilla de techo",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 99
+ },
+ {
+  "name": "Piano de las plumas LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 100
+ },
+ {
+  "name": "Piano de las plumas RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 101
+ },
+ {
+  "name": "Piano de plumas una sola pieza",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 102
+ },
+ {
+  "name": "Portallantas carrocería",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 103
+ },
+ {
+  "name": "Puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 104
+ },
+ {
+  "name": "Puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 105
+ },
+ {
+  "name": "Puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 106
+ },
+ {
+  "name": "Puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 107
+ },
+ {
+  "name": "Retrovisor lateral LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 108
+ },
+ {
+  "name": "Retrovisor lateral RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 109
+ },
+ {
+  "name": "Seguro tapa de combustible",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 110
+ },
+ {
+  "name": "Sello (toyota y corolla)",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 111
+ },
+ {
+  "name": "Sensor puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 112
+ },
+ {
+  "name": "Sensor puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 113
+ },
+ {
+  "name": "Sensor puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 114
+ },
+ {
+  "name": "Sensor puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 115
+ },
+ {
+  "name": "Soporte compactos",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 116
+ },
+ {
+  "name": "Soporte del puente posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 117
+ },
+ {
+  "name": "Soporte del puente posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 118
+ },
+ {
+  "name": "Soporte guardachoque delantero",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 119
+ },
+ {
+  "name": "Soporte guardachoque posterior",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 120
+ },
+ {
+  "name": "Tapa de combustible llenado",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 121
+ },
+ {
+  "name": "Tapa del combustible carrocería",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 122
+ },
+ {
+  "name": "Tapacubos x4",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 123
+ },
+ {
+  "name": "Techo",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 124
+ },
+ {
+  "name": "Tensor puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 125
+ },
+ {
+  "name": "Tensor puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 126
+ },
+ {
+  "name": "Tensor puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 127
+ },
+ {
+  "name": "Tensor puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 128
+ },
+ {
+  "name": "Tope puerta delantera LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 129
+ },
+ {
+  "name": "Tope puerta delantera RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 130
+ },
+ {
+  "name": "Tope puerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 131
+ },
+ {
+  "name": "Tope puerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 132
+ },
+ {
+  "name": "U del radiador",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 133
+ },
+ {
+  "name": "Ventolera delantera LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 134
+ },
+ {
+  "name": "Ventolera delantera RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 135
+ },
+ {
+  "name": "Ventolera posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 136
+ },
+ {
+  "name": "Ventolera posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 137
+ },
+ {
+  "name": "Vidrio delantero LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 138
+ },
+ {
+  "name": "Vidrio delantero RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 139
+ },
+ {
+  "name": "Vidrio posterior cajuela LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 140
+ },
+ {
+  "name": "Vidrio posterior cajuela RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 141
+ },
+ {
+  "name": "Vidrio posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 142
+ },
+ {
+  "name": "Vidrio posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 143
+ },
+ {
+  "name": "Visagra capot LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 144
+ },
+ {
+  "name": "Visagra compuerta posterior LH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 145
+ },
+ {
+  "name": "Visagra compuerta posterior RH",
+  "zone": "EXTERIOR",
+  "kept": false,
+  "sortOrder": 146
+ },
+ {
+  "name": "Carrocería",
+  "zone": "EXTERIOR",
+  "kept": true,
+  "sortOrder": 147
+ }
+]

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-function categoryCode(categoryName: string) {
+export function categoryCode(categoryName: string) {
   const letters = categoryName.toUpperCase().replace(/[^A-Z]/g, "");
   return (letters.slice(0, 3) || "PRT").padEnd(3, "X");
 }

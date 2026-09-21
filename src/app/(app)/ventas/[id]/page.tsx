@@ -12,6 +12,7 @@ export default async function VentaDetailPage({ params }: { params: Promise<{ id
     where: { id },
     include: {
       customer: true,
+      employee: true,
       items: { include: { part: { include: { partType: true } } } },
     },
   });
@@ -38,13 +39,21 @@ export default async function VentaDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          <div className="text-sm">
-            <p className="font-medium">Cliente</p>
-            <p className="text-muted-foreground">
-              {sale.customer?.name ?? "Cliente sin registrar"}
-              {sale.customer?.phone && ` · ${sale.customer.phone}`}
-              {sale.customer?.idNumber && ` · ${sale.customer.idNumber}`}
-            </p>
+          <div className="flex justify-between text-sm">
+            <div>
+              <p className="font-medium">Cliente</p>
+              <p className="text-muted-foreground">
+                {sale.customer?.name ?? "Cliente sin registrar"}
+                {sale.customer?.phone && ` · ${sale.customer.phone}`}
+                {sale.customer?.idNumber && ` · ${sale.customer.idNumber}`}
+              </p>
+            </div>
+            {sale.employee && (
+              <div className="text-right">
+                <p className="font-medium">Vendido por</p>
+                <p className="text-muted-foreground">{sale.employee.name}</p>
+              </div>
+            )}
           </div>
 
           <table className="w-full text-sm">

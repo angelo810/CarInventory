@@ -9,11 +9,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2 } from "lucide-react";
+import { Check, Plus, Trash2 } from "lucide-react";
 import { partConditionLabels, partStatusLabels } from "@/lib/labels";
 import { PartCondition, PartStatus } from "@/generated/prisma/enums";
 
-type PartTypeOption = { id: string; name: string; category: string };
+type ZoneKey = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER";
+const ZONES: { value: Exclude<ZoneKey, "OTHER">; label: string }[] = [
+  { value: "INTERIOR", label: "Interior" },
+  { value: "MECHANICAL", label: "Mecánico" },
+  { value: "EXTERIOR", label: "Exterior" },
+];
+
+type PartTypeOption = { id: string; name: string; category: string; zone: ZoneKey | null };
 type Category = { id: string; name: string };
 type VehicleOption = { id: string; brand: string; model: string; year: number };
 
@@ -32,7 +39,18 @@ export function PartForm({
 }) {
   const [state, formAction, isPending] = useActionState(createPart, undefined);
   const [mode, setMode] = useState<"existing" | "new">(partTypes.length ? "existing" : "new");
-  const [partTypeId, setPartTypeId] = useState(partTypes[0]?.id ?? "");
+  const [partTypeId, setPartTypeId] = useState("");
+  const [zone, setZone] = useState<ZoneKey>("INTERIOR");
+  const [filter, setFilter] = useState("");
+  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const tokens = norm(filter).split(/\s+/).filter(Boolean);
+  const visible = partTypes
+    .filter((pt) => (zone === "OTHER" ? !pt.zone : pt.zone === zone))
+    .filter((pt) => {
+      const n = norm(pt.name);
+      return tokens.every((t) => n.includes(t));
+    });
+  const selected = partTypes.find((pt) => pt.id === partTypeId);
   const [compatRows, setCompatRows] = useState<CompatRow[]>([
     { brand: "", model: "", yearFrom: "", yearTo: "" },
   ]);
@@ -61,23 +79,75 @@ export function PartForm({
               <TabsTrigger value="new">Crear nuevo tipo</TabsTrigger>
             </TabsList>
             <TabsContent value="existing" className="space-y-2 pt-2">
-              <Label>Selecciona el tipo de pieza</Label>
-              <Select
-                value={partTypeId}
-                onValueChange={(value) => setPartTypeId(value ?? "")}
-                items={Object.fromEntries(partTypes.map((pt) => [pt.id, `${pt.name} · ${pt.category}`]))}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecciona un tipo…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {partTypes.map((pt) => (
-                    <SelectItem key={pt.id} value={pt.id}>
-                      {pt.name} · {pt.category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>1. ¿De qué modelo es la pieza?</Label>
+              <div className="flex flex-wrap gap-2">
+                {ZONES.map((z) => (
+                  <Button
+                    key={z.value}
+                    type="button"
+                    size="sm"
+                    variant={zone === z.value ? "default" : "outline"}
+                    onClick={() => {
+                      setZone(z.value);
+                      setFilter("");
+                    }}
+                  >
+                    {z.label}
+                    <span className="ml-1 text-xs opacity-70">
+                      {partTypes.filter((pt) => pt.zone === z.value).length}
+                    </span>
+                  </Button>
+                ))}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={zone === "OTHER" ? "default" : "outline"}
+                  onClick={() => {
+                    setZone("OTHER");
+                    setFilter("");
+                  }}
+                >
+                  Otras
+                  <span className="ml-1 text-xs opacity-70">{partTypes.filter((pt) => !pt.zone).length}</span>
+                </Button>
+              </div>
+
+              <Label className="pt-2">2. Escribe para buscar la pieza</Label>
+              <Input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder={`Buscar en ${zone === "OTHER" ? "otras" : ZONES.find((z) => z.value === zone)?.label.toLowerCase()}… (ej: faro, lh, espejo)`}
+                autoComplete="off"
+              />
+              <div className="max-h-64 overflow-y-auto rounded-lg border">
+                {visible.map((pt) => (
+                  <button
+                    key={pt.id}
+                    type="button"
+                    onClick={() => setPartTypeId(pt.id)}
+                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted ${
+                      pt.id === partTypeId ? "bg-muted font-medium" : ""
+                    }`}
+                  >
+                    <span>{pt.name}</span>
+                    {pt.id === partTypeId && <Check className="size-4" />}
+                  </button>
+                ))}
+                {visible.length === 0 && (
+                  <p className="p-4 text-center text-sm text-muted-foreground">
+                    Sin resultados. Usa &quot;Crear nuevo tipo&quot; si no está en la lista.
+                  </p>
+                )}
+              </div>
+              <p className="text-sm">
+                {selected ? (
+                  <>
+                    Seleccionada: <strong>{selected.name}</strong>
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">Aún no has elegido una pieza.</span>
+                )}
+              </p>
               {mode === "existing" && <input type="hidden" name="partTypeId" value={partTypeId} />}
             </TabsContent>
             <TabsContent value="new" className="space-y-4 pt-2">

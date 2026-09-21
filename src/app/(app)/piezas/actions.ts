@@ -160,3 +160,19 @@ export async function removePhoto(photoId: string, partId: string) {
   await prisma.photo.delete({ where: { id: photoId } });
   revalidatePath(`/piezas/${partId}`);
 }
+
+export async function movePartType(id: string, zone: "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER") {
+  const type = await prisma.partType.findUnique({ where: { id }, select: { id: true } });
+  if (!type) return { error: "No encontré esa pieza." };
+  await prisma.partType.update({
+    where: { id },
+    data: zone === "OTHER" ? { zone: null, catalog: false } : { zone, catalog: true },
+  });
+  revalidatePath("/piezas");
+  revalidatePath("/piezas/nuevo");
+  revalidatePath("/piezas/tipos");
+  revalidatePath("/vehiculos");
+  revalidatePath("/ventas");
+  revalidatePath("/ventas/revisar");
+  return {};
+}

@@ -1,27 +1,27 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { partConditionLabels, partStatusBadgeVariant, partStatusLabels } from "@/lib/labels";
 import { StatusSelect } from "./status-select";
+import { VehicleInventory, type InventoryRow } from "./vehicle-inventory";
 
 export default async function VehiculoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const vehicle = await prisma.sourceVehicle.findUnique({
-    where: { id },
-    include: {
-      parts: {
-        include: { partType: true, saleItems: true },
-        orderBy: { createdAt: "desc" },
+  const [vehicle, catalog] = await Promise.all([
+    prisma.sourceVehicle.findUnique({
+      where: { id },
+      include: {
+        parts: { include: { partType: true, saleItems: true } },
+        expenses: { orderBy: { date: "desc" } },
       },
-      expenses: { orderBy: { date: "desc" } },
-    },
-  });
+    }),
+    prisma.partType.findMany({
+      where: { catalog: true, zone: { not: null } },
+      orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
+    }),
+  ]);
 
   if (!vehicle) notFound();
 
@@ -33,6 +33,43 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
   );
   const netProfit = recovered - totalCost;
   const soldCount = vehicle.parts.filter((p) => p.status === "SOLD").length;
+  const availableCount = vehicle.parts.filter((p) => p.status === "AVAILABLE").length;
+
+  // Una fila por tipo de pieza: las del catálogo (traiga o no el auto) + las propias de este vehículo
+  const rows = new Map<string, InventoryRow>();
+  for (const t of catalog) {
+    rows.set(t.id, {
+      partTypeId: t.id,
+      name: t.name,
+      zone: t.zone as InventoryRow["zone"],
+      kept: t.kept,
+      available: 0,
+      sold: 0,
+      other: 0,
+      price: 0,
+    });
+  }
+  for (const p of vehicle.parts) {
+    let row = rows.get(p.partTypeId);
+    if (!row) {
+      row = {
+        partTypeId: p.partTypeId,
+        name: p.partType.name,
+        zone: (p.partType.zone as InventoryRow["zone"]) ?? "OTHER",
+        kept: true,
+        available: 0,
+        sold: 0,
+        other: 0,
+        price: 0,
+      };
+      rows.set(p.partTypeId, row);
+    }
+    if (p.status === "AVAILABLE") {
+      row.available += 1;
+      row.price = Number(p.price);
+    } else if (p.status === "SOLD") row.sold += 1;
+    else row.other += 1;
+  }
 
   return (
     <div className="space-y-6">
@@ -49,7 +86,7 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
         <StatusSelect vehicleId={vehicle.id} status={vehicle.status} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Kpi label="Costo total" value={formatCurrency(totalCost)} />
         <Kpi label="Recuperado" value={formatCurrency(recovered)} />
         <Kpi
@@ -57,63 +94,15 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
           value={formatCurrency(netProfit)}
           tone={netProfit >= 0 ? "positive" : "negative"}
         />
-        <Kpi label="Piezas vendidas" value={`${soldCount} / ${vehicle.parts.length}`} />
+        <Kpi label="Disponibles" value={String(availableCount)} />
+        <Kpi label="Vendidas" value={`${soldCount} / ${vehicle.parts.length}`} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Piezas extraídas</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>SKU</TableHead>
-                <TableHead>Pieza</TableHead>
-                <TableHead>Condición</TableHead>
-                <TableHead>Costo</TableHead>
-                <TableHead>Precio</TableHead>
-                <TableHead>Estado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vehicle.parts.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <Link href={`/piezas/${p.id}`} className="font-mono text-xs hover:underline">
-                      {p.sku}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{p.partType.name}</TableCell>
-                  <TableCell>{partConditionLabels[p.condition]}</TableCell>
-                  <TableCell>{formatCurrency(p.cost.toString())}</TableCell>
-                  <TableCell>{formatCurrency(p.price.toString())}</TableCell>
-                  <TableCell>
-                    <Badge variant={partStatusBadgeVariant[p.status]}>{partStatusLabels[p.status]}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {vehicle.parts.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
-                    Aún no se han registrado piezas de este vehículo.
-                    <div className="mt-2">
-                      <Button
-                        render={<Link href={`/piezas/nuevo?vehicleId=${vehicle.id}`} />}
-                        nativeButton={false}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Registrar pieza
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <VehicleInventory
+        key={[...rows.values()].map((r) => `${r.partTypeId}:${r.available}:${r.sold}:${r.price}`).join("|")}
+        vehicleId={vehicle.id}
+        rows={[...rows.values()]}
+      />
 
       {vehicle.expenses.length > 0 && (
         <Card>

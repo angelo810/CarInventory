@@ -10,8 +10,9 @@ export default async function NuevaPiezaPage({
 
   const [partTypes, categories, vehicles] = await Promise.all([
     prisma.partType.findMany({
+      where: { OR: [{ catalog: true }, { parts: { some: {} } }] },
       include: { category: true },
-      orderBy: { name: "asc" },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.sourceVehicle.findMany({
@@ -29,7 +30,7 @@ export default async function NuevaPiezaPage({
         </p>
       </div>
       <PartForm
-        partTypes={partTypes.map((pt) => ({ id: pt.id, name: pt.name, category: pt.category.name }))}
+        partTypes={partTypes.map((pt) => ({ id: pt.id, name: pt.name, category: pt.category.name, zone: pt.catalog ? pt.zone : null }))}
         categories={categories}
         vehicles={vehicles.map((v) => ({ id: v.id, brand: v.brand, model: v.model, year: v.year }))}
         defaultVehicleId={vehicleId}

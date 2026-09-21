@@ -33,7 +33,7 @@ export async function createExpense(
       category: data.category,
       description: data.description,
       amount: data.amount,
-      date: new Date(data.date),
+      date: new Date(`${data.date}T12:00:00`),
       sourceVehicleId: data.sourceVehicleId || null,
     },
   });
