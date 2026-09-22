@@ -9,5 +9,19 @@ export const authConfig = {
   providers: [],
   callbacks: {
     authorized: ({ auth }) => !!auth?.user,
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.uid = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    session: ({ session, token }) => {
+      if (session.user) {
+        session.user.id = token.uid ?? session.user.id;
+        session.user.role = token.role ?? "SELLER";
+      }
+      return session;
+    },
   },
 } satisfies NextAuthConfig;

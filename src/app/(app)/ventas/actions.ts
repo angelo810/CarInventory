@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { PaymentMethod } from "@/generated/prisma/enums";
 import { generateSku } from "@/lib/sku";
 import { inferCategory } from "@/lib/categorize";
+import { assertAdmin } from "@/lib/auth-guard";
 
 const newItemSchema = z
   .object({
@@ -50,6 +51,9 @@ export async function updateSale(
   _prevState: SaleFormState | undefined,
   formData: FormData,
 ): Promise<SaleFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const parsed = editSaleSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "Datos inválidos." };
   const data = parsed.data;
@@ -123,6 +127,9 @@ export async function createSale(
   _prevState: SaleFormState | undefined,
   formData: FormData,
 ): Promise<SaleFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const parsed = saleSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "Datos inválidos." };
   const data = parsed.data;
@@ -240,6 +247,9 @@ export async function createSale(
 }
 
 export async function deleteSale(saleId: string): Promise<SaleFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   try {
     await prisma.$transaction(async (tx) => {
       const sale = await tx.sale.findUnique({

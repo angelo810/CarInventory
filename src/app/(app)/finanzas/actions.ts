@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ExpenseCategory } from "@/generated/prisma/enums";
+import { assertAdmin } from "@/lib/auth-guard";
 
 const expenseSchema = z.object({
   category: z.nativeEnum(ExpenseCategory),
@@ -19,6 +20,9 @@ export async function createExpense(
   _prevState: ExpenseFormState | undefined,
   formData: FormData,
 ): Promise<ExpenseFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const raw = Object.fromEntries(formData);
   const parsed = expenseSchema.safeParse(raw);
 

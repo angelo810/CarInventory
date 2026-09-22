@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,8 @@ export default async function PiezasPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status } = await searchParams;
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const parts = await prisma.part.findMany({
     where: status && status !== "ALL" ? { status: status as never } : undefined,
@@ -37,15 +40,17 @@ export default async function PiezasPage({
           <h1 className="text-2xl font-semibold tracking-tight">Piezas</h1>
           <p className="text-sm text-muted-foreground">Catálogo e inventario de piezas.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" render={<Link href="/piezas/tipos" />} nativeButton={false}>
-            Organizar tipos
-          </Button>
-          <Button render={<Link href="/piezas/nuevo" />} nativeButton={false}>
-            <Plus className="size-4" />
-            Nueva pieza
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-2">
+            <Button variant="outline" render={<Link href="/piezas/tipos" />} nativeButton={false}>
+              Organizar tipos
+            </Button>
+            <Button render={<Link href="/piezas/nuevo" />} nativeButton={false}>
+              <Plus className="size-4" />
+              Nueva pieza
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">

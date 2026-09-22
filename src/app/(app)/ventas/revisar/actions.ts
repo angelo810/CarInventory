@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { assertAdmin } from "@/lib/auth-guard";
 
 const SOLD_AS = "Vendida como: ";
 const FLAGS = /( \((lado no especificado|revisar|asignada)\))+$/;
@@ -11,6 +12,9 @@ export async function assignCatalogPart(input: {
   kind: "unmatched" | "review";
   catalogName: string;
 }): Promise<{ error?: string; updated?: number }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const name = input.catalogName.trim();
   if (!name) return { error: "Escribe o elige el nombre de la pieza del catálogo." };
 

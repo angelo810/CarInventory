@@ -58,6 +58,10 @@ export function SearchClient({ categories }: { categories: Category[] }) {
   const [results, setResults] = useState<PartTypeResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Se incrementa en cada búsqueda; una respuesta que llega tarde y ya no es la
+  // más reciente se descarta, para que un filtro cambiado rápido (ej. escribir y
+  // luego tocar el estado) no se pise con la respuesta vacía de la búsqueda anterior.
+  const requestIdRef = useRef(0);
 
   const hasFilter = q.trim().length > 0 || categoryId !== "ALL";
 
@@ -65,11 +69,14 @@ export function SearchClient({ categories }: { categories: Category[] }) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (!nextQ.trim() && nextCategoryId === "ALL") {
+      requestIdRef.current += 1;
       setResults(null);
+      setLoading(false);
       return;
     }
 
     setLoading(true);
+    const requestId = ++requestIdRef.current;
     debounceRef.current = setTimeout(() => {
       const p = new URLSearchParams();
       if (nextQ.trim()) p.set("q", nextQ.trim());
@@ -78,8 +85,13 @@ export function SearchClient({ categories }: { categories: Category[] }) {
 
       fetch(`/api/search?${p.toString()}`)
         .then((res) => res.json())
-        .then((data) => setResults(data.results ?? []))
-        .finally(() => setLoading(false));
+        .then((data) => {
+          if (requestId !== requestIdRef.current) return; // ya hay una búsqueda más nueva en curso
+          setResults(data.results ?? []);
+        })
+        .finally(() => {
+          if (requestId === requestIdRef.current) setLoading(false);
+        });
     }, 250);
   }
 
@@ -212,6 +224,11 @@ function PartTypeCard({ partType }: { partType: PartTypeResult }) {
                 <span className="text-muted-foreground">
                   {partConditionLabels[part.condition as keyof typeof partConditionLabels]}
                 </span>
+                {part.sourceVehicle && (
+                  <span className="text-muted-foreground">
+                    🚗 {part.sourceVehicle.brand} {part.sourceVehicle.model} ({part.sourceVehicle.year})
+                  </span>
+                )}
                 {part.location && <span className="text-muted-foreground">📍 {part.location}</span>}
               </div>
               <span className="font-semibold">{formatCurrency(part.price)}</span>

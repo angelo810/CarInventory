@@ -3,26 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Search,
-  Package,
-  Car,
-  ShoppingCart,
-  Wallet,
-} from "lucide-react";
+import { navForRole } from "@/lib/nav";
 
-const links = [
-  { href: "/", label: "Panel", icon: LayoutDashboard },
-  { href: "/buscar", label: "Buscar pieza", icon: Search },
-  { href: "/piezas", label: "Piezas", icon: Package },
-  { href: "/vehiculos", label: "Vehículos", icon: Car },
-  { href: "/ventas", label: "Ventas", icon: ShoppingCart },
-  { href: "/finanzas", label: "Finanzas", icon: Wallet },
-];
-
-export function AppSidebar() {
+export function AppSidebar({ role }: { role: "ADMIN" | "SELLER" | undefined }) {
   const pathname = usePathname();
+  const links = navForRole(role);
 
   return (
     <aside className="hidden md:flex w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground">

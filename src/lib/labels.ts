@@ -1,4 +1,4 @@
-import { PartCondition, PartStatus, PaymentMethod, ExpenseCategory } from "@/generated/prisma/enums";
+import { PartCondition, PartStatus, PaymentMethod, ExpenseCategory, QuoteStatus } from "@/generated/prisma/enums";
 
 export const partConditionLabels: Record<PartCondition, string> = {
   [PartCondition.NEW]: "Nueva",
@@ -41,4 +41,16 @@ export const sourceVehicleStatusLabels: Record<string, string> = {
   IN_PROGRESS: "En proceso",
   DISMANTLED: "Desmantelado",
   ARCHIVED: "Archivado",
+};
+
+export const quoteStatusLabels: Record<QuoteStatus, string> = {
+  [QuoteStatus.ENVIADA]: "Enviada",
+  [QuoteStatus.RESPONDIDA]: "Respondida",
+  [QuoteStatus.CERRADA]: "Cerrada",
+};
+
+export const quoteStatusBadgeVariant: Record<QuoteStatus, "default" | "secondary" | "destructive" | "outline"> = {
+  [QuoteStatus.ENVIADA]: "outline",
+  [QuoteStatus.RESPONDIDA]: "secondary",
+  [QuoteStatus.CERRADA]: "default",
 };

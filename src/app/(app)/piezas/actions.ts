@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { generateSku } from "@/lib/sku";
 import { PartCondition, PartStatus } from "@/generated/prisma/enums";
+import { assertAdmin } from "@/lib/auth-guard";
 
 const compatibilitySchema = z.object({
   brand: z.string().min(1),
@@ -35,6 +36,9 @@ export async function createPart(
   _prevState: PartFormState | undefined,
   formData: FormData,
 ): Promise<PartFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const parsed = partSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
@@ -115,6 +119,9 @@ export async function updatePart(
   _prevState: PartFormState | undefined,
   formData: FormData,
 ): Promise<PartFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const parsed = updateSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
@@ -152,16 +159,23 @@ export async function updatePart(
 }
 
 export async function addPhoto(partId: string, url: string) {
+  if (await assertAdmin()) return;
   await prisma.photo.create({ data: { partId, url } });
   revalidatePath(`/piezas/${partId}`);
 }
 
 export async function removePhoto(photoId: string, partId: string) {
+  if (await assertAdmin()) return;
   await prisma.photo.delete({ where: { id: photoId } });
   revalidatePath(`/piezas/${partId}`);
 }
 
-export async function movePartType(id: string, zone: "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER") {
+export async function movePartType(
+  id: string,
+  zone: "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER",
+): Promise<{ error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
   const type = await prisma.partType.findUnique({ where: { id }, select: { id: true } });
   if (!type) return { error: "No encontré esa pieza." };
   await prisma.partType.update({

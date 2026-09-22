@@ -2,9 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/format";
-import { AssignRow, CatalogProvider } from "./assign-row";
+import { CatalogProvider } from "./assign-row";
+import { GroupsTable } from "./groups-table";
 
 const SOLD_AS = "Vendida como: ";
 const FLAGS = /( \((lado no especificado|revisar|asignada)\))+$/;
@@ -67,39 +66,11 @@ export default async function RevisarPage() {
           </p>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Texto del chat</TableHead>
-                <TableHead className="text-right">Ventas</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Autos</TableHead>
-                <TableHead>Asignar a</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {unmatchedList.map((g) => (
-                <TableRow key={g.text}>
-                  <TableCell className="max-w-xs whitespace-normal">{g.text}</TableCell>
-                  <TableCell className="text-right">{g.count}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(g.revenue)}</TableCell>
-                  <TableCell className="max-w-48 whitespace-normal text-xs text-muted-foreground">
-                    {[...g.vehicles].slice(0, 3).join(", ")}
-                  </TableCell>
-                  <TableCell>
-                    <AssignRow text={g.text} kind="unmatched" />
-                  </TableCell>
-                </TableRow>
-              ))}
-              {unmatchedList.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                    No hay piezas sin coincidencia.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <GroupsTable
+            kind="unmatched"
+            groups={unmatchedList.map((g) => ({ ...g, vehicles: [...g.vehicles] }))}
+            emptyMessage="No hay piezas sin coincidencia."
+          />
         </CardContent>
       </Card>
 
@@ -111,35 +82,11 @@ export default async function RevisarPage() {
           </p>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Texto del chat</TableHead>
-                <TableHead className="text-right">Ventas</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Asignada a</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reviewList.map((g) => (
-                <TableRow key={`${g.text}${g.current}`}>
-                  <TableCell className="max-w-xs whitespace-normal">{g.text}</TableCell>
-                  <TableCell className="text-right">{g.count}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(g.revenue)}</TableCell>
-                  <TableCell>
-                    <AssignRow text={g.text} kind="review" initial={g.current} />
-                  </TableCell>
-                </TableRow>
-              ))}
-              {reviewList.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                    No hay coincidencias por confirmar.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <GroupsTable
+            kind="review"
+            groups={reviewList.map((g) => ({ ...g, vehicles: [...g.vehicles] }))}
+            emptyMessage="No hay coincidencias por confirmar."
+          />
         </CardContent>
       </Card>
     </div>

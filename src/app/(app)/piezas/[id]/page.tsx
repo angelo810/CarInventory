@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,8 @@ import { PartEditForm } from "./part-edit-form";
 
 export default async function PiezaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const part = await prisma.part.findUnique({
     where: { id },
@@ -81,22 +84,24 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Editar pieza</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PartEditForm
-            partId={part.id}
-            condition={part.condition}
-            status={part.status}
-            location={part.location ?? ""}
-            cost={part.cost.toString()}
-            price={part.price.toString()}
-            notes={part.notes ?? ""}
-          />
-        </CardContent>
-      </Card>
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Editar pieza</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PartEditForm
+              partId={part.id}
+              condition={part.condition}
+              status={part.status}
+              location={part.location ?? ""}
+              cost={part.cost.toString()}
+              price={part.price.toString()}
+              notes={part.notes ?? ""}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {part.priceHistory.length > 0 && (
         <Card>

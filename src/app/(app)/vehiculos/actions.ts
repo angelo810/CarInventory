@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { inferCategory } from "@/lib/categorize";
 import { categoryCode } from "@/lib/sku";
+import { assertAdmin } from "@/lib/auth-guard";
 
 const vehicleSchema = z.object({
   brand: z.string().min(1, "Marca requerida"),
@@ -36,6 +37,9 @@ export async function createVehicle(
   _prevState: VehicleFormState | undefined,
   formData: FormData,
 ): Promise<VehicleFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   const parsed = vehicleSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
@@ -139,6 +143,7 @@ export async function createVehicle(
 }
 
 export async function updateVehicleStatus(id: string, status: "IN_PROGRESS" | "DISMANTLED" | "ARCHIVED") {
+  if (await assertAdmin()) return;
   await prisma.sourceVehicle.update({ where: { id }, data: { status } });
   revalidatePath(`/vehiculos/${id}`);
   revalidatePath("/vehiculos");
@@ -161,6 +166,9 @@ export async function saveVehicleInventory(
   vehicleId: string,
   payload: string,
 ): Promise<{ error?: string; created?: number; removed?: number }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
   let changes: z.infer<typeof inventoryChangeSchema>[] = [];
   let extras: z.infer<typeof inventoryExtraSchema>[] = [];
   try {

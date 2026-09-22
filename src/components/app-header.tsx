@@ -10,28 +10,19 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  LayoutDashboard,
-  Search,
-  Package,
-  Car,
-  ShoppingCart,
-  Wallet,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/(app)/actions";
+import { navForRole } from "@/lib/nav";
 
-const links = [
-  { href: "/", label: "Panel", icon: LayoutDashboard },
-  { href: "/buscar", label: "Buscar pieza", icon: Search },
-  { href: "/piezas", label: "Piezas", icon: Package },
-  { href: "/vehiculos", label: "Vehículos", icon: Car },
-  { href: "/ventas", label: "Ventas", icon: ShoppingCart },
-  { href: "/finanzas", label: "Finanzas", icon: Wallet },
-];
-
-export function AppHeader({ userEmail }: { userEmail?: string | null }) {
+export function AppHeader({
+  userEmail,
+  role,
+}: {
+  userEmail?: string | null;
+  role: "ADMIN" | "SELLER" | undefined;
+}) {
   const pathname = usePathname();
+  const links = navForRole(role);
 
   return (
     <header className="h-14 shrink-0 border-b flex items-center justify-between px-4 gap-4">

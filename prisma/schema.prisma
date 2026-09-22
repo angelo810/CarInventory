@@ -14,13 +14,21 @@ datasource db {
 
 // ---------- Auth ----------
 
+enum Role {
+  ADMIN
+  SELLER
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
   name         String?
+  role         Role     @default(SELLER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  quotes Quote[]
 }
 
 // ---------- Vehiculos de origen ----------
@@ -264,4 +272,27 @@ model Expense {
   @@index([date])
   @@index([category])
   @@index([sourceVehicleId])
+}
+
+// ---------- Cotizaciones ----------
+
+enum QuoteStatus {
+  ENVIADA // se generó el link/mensaje de WhatsApp
+  RESPONDIDA
+  CERRADA
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  description String // texto de la pieza que se necesita
+  status      QuoteStatus @default(ENVIADA)
+  requesterId String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  requester User @relation(fields: [requesterId], references: [id])
+
+  @@index([requesterId])
+  @@index([status])
+  @@index([createdAt])
 }
