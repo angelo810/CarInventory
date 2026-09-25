@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { assignCatalogPart } from "./actions";
 
-type ZoneKey = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER";
+type ZoneKey = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE" | "OTHER";
 export type CatalogOption = { name: string; zone: ZoneKey };
 
 const ZONES: { value: ZoneKey; label: string }[] = [
   { value: "INTERIOR", label: "Interior" },
   { value: "MECHANICAL", label: "Mecánico" },
   { value: "EXTERIOR", label: "Exterior" },
+  { value: "DOCUMENTS", label: "Documentos" },
+  { value: "SCRAP", label: "Chatarra" },
+  { value: "COMPLETE", label: "Completo" },
   { value: "OTHER", label: "Otras" },
 ];
 

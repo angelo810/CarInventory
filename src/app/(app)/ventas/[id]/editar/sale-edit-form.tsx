@@ -13,11 +13,13 @@ import { formatCurrency } from "@/lib/format";
 import { paymentMethodLabels } from "@/lib/labels";
 import { PaymentMethod } from "@/generated/prisma/enums";
 import { DeleteSaleButton } from "../../delete-sale-button";
+import { Plus, Trash2 } from "lucide-react";
 
 type Option = { id: string; name: string };
 type Item = {
-  itemId: string;
-  sku: string;
+  key: string;
+  itemId?: string; // ausente = pieza nueva que se agrega ahora
+  sku?: string;
   name: string;
   categoryId: string;
   sourceVehicleId: string;
@@ -45,17 +47,36 @@ export function SaleEditForm({
   employees: Option[];
   vehicles: { id: string; label: string }[];
   categories: Option[];
-  items: Item[];
+  items: Omit<Item, "key">[];
 }) {
   const [state, formAction, isPending] = useActionState(updateSale.bind(null, saleId), undefined);
-  const [items, setItems] = useState<Item[]>(initialItems);
+  const [items, setItems] = useState<Item[]>(() => initialItems.map((i) => ({ ...i, key: i.itemId! })));
   const [employee, setEmployee] = useState(employeeId || NONE);
   const [vehicle, setVehicle] = useState(initialItems[0]?.sourceVehicleId || NONE);
+  const [nextKey, setNextKey] = useState(1);
 
   const total = useMemo(() => items.reduce((s, i) => s + (Number(i.priceSold) || 0), 0), [items]);
 
-  function patch(itemId: string, changes: Partial<Item>) {
-    setItems((prev) => prev.map((i) => (i.itemId === itemId ? { ...i, ...changes } : i)));
+  function patch(key: string, changes: Partial<Item>) {
+    setItems((prev) => prev.map((i) => (i.key === key ? { ...i, ...changes } : i)));
+  }
+
+  function addItem() {
+    setItems((prev) => [
+      ...prev,
+      {
+        key: `new-${nextKey}`,
+        name: "",
+        categoryId: categories[0]?.id ?? "",
+        sourceVehicleId: vehicle === NONE ? "" : vehicle,
+        priceSold: "0",
+      },
+    ]);
+    setNextKey((k) => k + 1);
+  }
+
+  function removeItem(key: string) {
+    setItems((prev) => prev.filter((i) => i.key !== key));
   }
 
   const vehicleItems = { [NONE]: "Sin auto", ...Object.fromEntries(vehicles.map((v) => [v.id, v.label])) };
@@ -83,16 +104,30 @@ export function SaleEditForm({
         </CardHeader>
         <CardContent className="space-y-6">
           {items.map((item) => (
-            <div key={item.itemId} className="grid sm:grid-cols-2 gap-3 border-b pb-6 last:border-0 last:pb-0">
-              <div className="sm:col-span-2 space-y-2">
-                <Label htmlFor={`name-${item.itemId}`}>
-                  Pieza <span className="font-mono text-xs text-muted-foreground">{item.sku}</span>
+            <div key={item.key} className="grid sm:grid-cols-2 gap-3 border-b pb-6 last:border-0 last:pb-0">
+              <div className="sm:col-span-2 flex items-start justify-between gap-2">
+                <Label htmlFor={`name-${item.key}`}>
+                  Pieza{" "}
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {item.sku ?? "nueva pieza"}
+                  </span>
                 </Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  title="Quitar esta pieza de la venta"
+                  onClick={() => removeItem(item.key)}
+                >
+                  <Trash2 className="size-4 text-destructive" />
+                </Button>
+              </div>
+              <div className="sm:col-span-2 space-y-2">
                 <Textarea
-                  id={`name-${item.itemId}`}
+                  id={`name-${item.key}`}
                   rows={2}
                   value={item.name}
-                  onChange={(e) => patch(item.itemId, { name: e.target.value })}
+                  onChange={(e) => patch(item.key, { name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
@@ -100,7 +135,7 @@ export function SaleEditForm({
                 <Select
                   value={item.categoryId}
                   items={Object.fromEntries(categories.map((c) => [c.id, c.name]))}
-                  onValueChange={(v) => v && patch(item.itemId, { categoryId: v })}
+                  onValueChange={(v) => v && patch(item.key, { categoryId: v })}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -115,17 +150,21 @@ export function SaleEditForm({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`price-${item.itemId}`}>Precio (USD)</Label>
+                <Label htmlFor={`price-${item.key}`}>Precio (USD)</Label>
                 <Input
-                  id={`price-${item.itemId}`}
+                  id={`price-${item.key}`}
                   type="number"
                   step="0.01"
                   value={item.priceSold}
-                  onChange={(e) => patch(item.itemId, { priceSold: e.target.value })}
+                  onChange={(e) => patch(item.key, { priceSold: e.target.value })}
                 />
               </div>
             </div>
           ))}
+          <Button type="button" variant="outline" size="sm" onClick={addItem}>
+            <Plus className="size-4" />
+            Agregar pieza
+          </Button>
           <div className="flex justify-end text-lg font-semibold">Total: {formatCurrency(total)}</div>
         </CardContent>
       </Card>

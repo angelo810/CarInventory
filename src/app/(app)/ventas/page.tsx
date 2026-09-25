@@ -16,6 +16,9 @@ const ZONE_LABELS: Record<string, string> = {
   INTERIOR: "Interior",
   MECHANICAL: "Mecánico",
   EXTERIOR: "Exterior",
+  DOCUMENTS: "Documentos",
+  SCRAP: "Chatarra",
+  COMPLETE: "Completo",
 };
 
 const selectClass =
@@ -346,11 +349,11 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <span className="text-muted-foreground">
             Página {currentPage} de {totalPages}
           </span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {currentPage > 1 && (
               <Button variant="outline" render={<Link href={href({ page: currentPage - 1 > 1 ? String(currentPage - 1) : undefined })} />} nativeButton={false}>
                 Anterior
@@ -361,6 +364,25 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
                 Siguiente
               </Button>
             )}
+            <form method="GET" action="/ventas" className="flex items-center gap-1.5">
+              {query && <input type="hidden" name="q" value={query} />}
+              {vehicleId && <input type="hidden" name="vehicleId" value={vehicleId} />}
+              {employeeId && <input type="hidden" name="employeeId" value={employeeId} />}
+              {vista === "ventas" && <input type="hidden" name="vista" value="ventas" />}
+              <span className="text-muted-foreground">Ir a</span>
+              <Input
+                key={currentPage}
+                type="number"
+                name="page"
+                min={1}
+                max={totalPages}
+                defaultValue={currentPage}
+                className="h-8 w-16 text-center"
+              />
+              <Button type="submit" size="sm" variant="outline">
+                Ir
+              </Button>
+            </form>
           </div>
         </div>
       )}

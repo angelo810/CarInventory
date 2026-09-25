@@ -13,15 +13,26 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
 
-  const part = await prisma.part.findUnique({
-    where: { id },
-    include: {
-      partType: { include: { category: true, compatibilities: true } },
-      sourceVehicle: true,
-      priceHistory: { orderBy: { changedAt: "desc" } },
-      saleItems: { include: { sale: { include: { customer: true } } } },
-    },
-  });
+  const [part, partTypes, vehicles] = await Promise.all([
+    prisma.part.findUnique({
+      where: { id },
+      include: {
+        partType: { include: { category: true, compatibilities: true } },
+        sourceVehicle: true,
+        priceHistory: { orderBy: { changedAt: "desc" } },
+        saleItems: { include: { sale: { include: { customer: true } } } },
+      },
+    }),
+    prisma.partType.findMany({
+      where: { OR: [{ catalog: true }, { parts: { some: {} } }] },
+      include: { category: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    }),
+    prisma.sourceVehicle.findMany({
+      where: { status: { not: "ARCHIVED" } },
+      orderBy: { purchaseDate: "desc" },
+    }),
+  ]);
 
   if (!part) notFound();
 
@@ -92,6 +103,16 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
           <CardContent>
             <PartEditForm
               partId={part.id}
+              partTypeId={part.partTypeId}
+              partTypeZone={part.partType.catalog && part.partType.zone ? part.partType.zone : "OTHER"}
+              partTypes={partTypes.map((pt) => ({
+                id: pt.id,
+                name: pt.name,
+                category: pt.category.name,
+                zone: pt.catalog ? pt.zone : null,
+              }))}
+              sourceVehicleId={part.sourceVehicleId ?? ""}
+              vehicles={vehicles.map((v) => ({ id: v.id, brand: v.brand, model: v.model, year: v.year }))}
               condition={part.condition}
               status={part.status}
               location={part.location ?? ""}

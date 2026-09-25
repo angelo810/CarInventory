@@ -106,6 +106,8 @@ export async function createPart(
 }
 
 const updateSchema = z.object({
+  partTypeId: z.string().min(1, "Elige un tipo de pieza"),
+  sourceVehicleId: z.string().optional(),
   condition: z.nativeEnum(PartCondition),
   status: z.nativeEnum(PartStatus),
   location: z.string().optional(),
@@ -132,6 +134,16 @@ export async function updatePart(
   const current = await prisma.part.findUnique({ where: { id: partId } });
   if (!current) return { error: "Pieza no encontrada." };
 
+  const newType = await prisma.partType.findUnique({ where: { id: data.partTypeId } });
+  if (!newType) return { error: "Ese tipo de pieza ya no existe." };
+
+  if (data.sourceVehicleId) {
+    const vehicle = await prisma.sourceVehicle.findUnique({ where: { id: data.sourceVehicleId } });
+    if (!vehicle) return { error: "Ese vehículo ya no existe." };
+  }
+
+  const oldTypeId = current.partTypeId;
+
   await prisma.$transaction(async (tx) => {
     if (Number(current.price) !== data.price) {
       await tx.priceHistory.create({
@@ -142,6 +154,8 @@ export async function updatePart(
     await tx.part.update({
       where: { id: partId },
       data: {
+        partTypeId: data.partTypeId,
+        sourceVehicleId: data.sourceVehicleId || null,
         condition: data.condition,
         status: data.status,
         location: data.location || null,
@@ -150,11 +164,20 @@ export async function updatePart(
         notes: data.notes || null,
       },
     });
+
+    // Si se cambió a otro tipo y el anterior era un texto libre (no catálogo) que se quedó sin
+    // unidades, se borra para no dejar tipos huérfanos.
+    if (oldTypeId !== data.partTypeId) {
+      await tx.partType.deleteMany({ where: { id: oldTypeId, catalog: false, parts: { none: {} } } });
+    }
   });
 
   revalidatePath(`/piezas/${partId}`);
   revalidatePath("/piezas");
   revalidatePath("/buscar");
+  revalidatePath("/piezas/tipos");
+  if (current.sourceVehicleId) revalidatePath(`/vehiculos/${current.sourceVehicleId}`);
+  if (data.sourceVehicleId) revalidatePath(`/vehiculos/${data.sourceVehicleId}`);
   return {};
 }
 
@@ -172,7 +195,7 @@ export async function removePhoto(photoId: string, partId: string) {
 
 export async function movePartType(
   id: string,
-  zone: "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER",
+  zone: "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE" | "OTHER",
 ): Promise<{ error?: string }> {
   const denied = await assertAdmin();
   if (denied) return denied;
@@ -185,6 +208,47 @@ export async function movePartType(
   revalidatePath("/piezas");
   revalidatePath("/piezas/nuevo");
   revalidatePath("/piezas/tipos");
+  revalidatePath("/vehiculos");
+  revalidatePath("/ventas");
+  revalidatePath("/ventas/revisar");
+  return {};
+}
+
+export async function renamePartType(id: string, name: string): Promise<{ error?: string; mergedInto?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  const newName = name.trim();
+  if (!newName) return { error: "El nombre no puede estar vacío." };
+
+  const type = await prisma.partType.findUnique({ where: { id } });
+  if (!type) return { error: "No encontré esa pieza." };
+  if (newName === type.name) return {};
+
+  const clash = await prisma.partType.findFirst({
+    where: { id: { not: id }, name: { equals: newName, mode: "insensitive" } },
+  });
+
+  if (clash) {
+    // Ya existe un tipo con ese nombre: fusiona esta pieza (y sus unidades) en esa.
+    await prisma.$transaction([
+      prisma.part.updateMany({ where: { partTypeId: id }, data: { partTypeId: clash.id } }),
+      prisma.partCompatibility.deleteMany({ where: { partTypeId: id } }),
+      prisma.partType.delete({ where: { id } }),
+    ]);
+    revalidatePath("/piezas");
+    revalidatePath("/piezas/tipos");
+    revalidatePath("/piezas/nuevo");
+    revalidatePath("/vehiculos");
+    revalidatePath("/ventas");
+    revalidatePath("/ventas/revisar");
+    return { mergedInto: clash.name };
+  }
+
+  await prisma.partType.update({ where: { id }, data: { name: newName } });
+  revalidatePath("/piezas");
+  revalidatePath("/piezas/tipos");
+  revalidatePath("/piezas/nuevo");
   revalidatePath("/vehiculos");
   revalidatePath("/ventas");
   revalidatePath("/ventas/revisar");

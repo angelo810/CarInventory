@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR";
+type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE";
 type CatalogItem = { id: string; name: string; zone: Zone; kept: boolean };
 type Extra = { key: number; name: string; zone: Zone; qty: string; addToCatalog: boolean };
 
@@ -19,6 +19,9 @@ const ZONES: { value: Zone; label: string }[] = [
   { value: "INTERIOR", label: "Interior" },
   { value: "MECHANICAL", label: "Mecánico" },
   { value: "EXTERIOR", label: "Exterior" },
+  { value: "DOCUMENTS", label: "Documentos" },
+  { value: "SCRAP", label: "Chatarra" },
+  { value: "COMPLETE", label: "Completo" },
 ];
 
 const selectClass =
@@ -35,7 +38,14 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
   const [nextKey, setNextKey] = useState(1);
 
   const byZone = useMemo(() => {
-    const map: Record<Zone, CatalogItem[]> = { INTERIOR: [], MECHANICAL: [], EXTERIOR: [] };
+    const map: Record<Zone, CatalogItem[]> = {
+      INTERIOR: [],
+      MECHANICAL: [],
+      EXTERIOR: [],
+      DOCUMENTS: [],
+      SCRAP: [],
+      COMPLETE: [],
+    };
     for (const item of catalog) map[item.zone].push(item);
     return map;
   }, [catalog]);
@@ -71,12 +81,25 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
   }
 
   const zoneTotals = useMemo(() => {
-    const totals: Record<Zone, number> = { INTERIOR: 0, MECHANICAL: 0, EXTERIOR: 0 };
+    const totals: Record<Zone, number> = {
+      INTERIOR: 0,
+      MECHANICAL: 0,
+      EXTERIOR: 0,
+      DOCUMENTS: 0,
+      SCRAP: 0,
+      COMPLETE: 0,
+    };
     for (const item of catalog) totals[item.zone] += qty[item.id] ?? 0;
     for (const e of extras) if (e.name.trim()) totals[e.zone] += Math.max(1, Number(e.qty) || 1);
     return totals;
   }, [catalog, qty, extras]);
-  const grandTotal = zoneTotals.INTERIOR + zoneTotals.MECHANICAL + zoneTotals.EXTERIOR;
+  const grandTotal =
+    zoneTotals.INTERIOR +
+    zoneTotals.MECHANICAL +
+    zoneTotals.EXTERIOR +
+    zoneTotals.DOCUMENTS +
+    zoneTotals.SCRAP +
+    zoneTotals.COMPLETE;
 
   const checklistJson = JSON.stringify(Object.entries(qty));
   const extrasJson = JSON.stringify(
@@ -296,7 +319,8 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
           <span className="font-semibold">{grandTotal}</span> piezas a registrar
           <span className="text-muted-foreground">
             {" "}
-            · Interior {zoneTotals.INTERIOR} · Mecánico {zoneTotals.MECHANICAL} · Exterior {zoneTotals.EXTERIOR}
+            · Interior {zoneTotals.INTERIOR} · Mecánico {zoneTotals.MECHANICAL} · Exterior {zoneTotals.EXTERIOR} ·
+            Documentos {zoneTotals.DOCUMENTS} · Chatarra {zoneTotals.SCRAP} · Completo {zoneTotals.COMPLETE}
           </span>
         </p>
         <Button type="submit" disabled={isPending}>

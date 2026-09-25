@@ -143,6 +143,48 @@ export async function getVehicleProfitability(range?: { from?: Date; to?: Date }
   return { rows, unassigned };
 }
 
+export const COMMISSION_RATE = 0.1; // 10% de lo vendido, pagado normalmente a fin de mes
+
+export type EmployeeRow = {
+  id: string;
+  name: string;
+  salesCount: number;
+  revenue: number;
+  commission: number;
+};
+
+// Cuánto vendió cada empleado (por venta, no por pieza) en un rango de fechas opcional, con su
+// comisión del 10%. Las ventas sin empleado asignado se agrupan aparte.
+export async function getEmployeeSales(range?: { from?: Date; to?: Date }) {
+  const dateFilter =
+    range?.from || range?.to ? { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } : undefined;
+
+  const sales = await prisma.sale.findMany({
+    where: dateFilter ? { saleDate: dateFilter } : {},
+    select: { totalAmount: true, employee: { select: { id: true, name: true } } },
+  });
+
+  const agg = new Map<string, EmployeeRow>();
+  let unassigned = { salesCount: 0, revenue: 0 };
+  for (const s of sales) {
+    const amount = Number(s.totalAmount);
+    if (!s.employee) {
+      unassigned = { salesCount: unassigned.salesCount + 1, revenue: unassigned.revenue + amount };
+      continue;
+    }
+    const row = agg.get(s.employee.id) ?? { id: s.employee.id, name: s.employee.name, salesCount: 0, revenue: 0, commission: 0 };
+    row.salesCount += 1;
+    row.revenue += amount;
+    agg.set(s.employee.id, row);
+  }
+
+  const rows = [...agg.values()]
+    .map((r) => ({ ...r, commission: r.revenue * COMMISSION_RATE }))
+    .sort((a, b) => b.revenue - a.revenue);
+
+  return { rows, unassigned };
+}
+
 export async function getVehicleSales(vehicleId: string, range?: { from?: Date; to?: Date }) {
   const dateFilter =
     range?.from || range?.to ? { saleDate: { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } } : {};

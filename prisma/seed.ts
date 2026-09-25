@@ -32,6 +32,7 @@ async function main() {
     "Transmisión",
     "Frenos",
     "Escape",
+    "Documentos",
     "Otro",
   ];
 

@@ -31,7 +31,7 @@ const FREE_SALE_NOTE = "Registrada al vender (sin inventario)";
 export type SaleFormState = { error?: string };
 
 const editItemSchema = z.object({
-  itemId: z.string(),
+  itemId: z.string().optional(), // ausente = pieza nueva que se agrega a la venta
   name: z.string().min(1),
   categoryId: z.string(),
   sourceVehicleId: z.string().optional(),
@@ -60,7 +60,11 @@ export async function updateSale(
 
   let items: z.infer<typeof editItemSchema>[];
   try {
-    items = z.array(editItemSchema).min(1).parse(JSON.parse(data.items));
+    const rawItems = JSON.parse(data.items);
+    if (Array.isArray(rawItems) && rawItems.length === 0) {
+      return { error: "La venta necesita al menos una pieza. Para borrarla toda usa \"Eliminar venta\"." };
+    }
+    items = z.array(editItemSchema).min(1).parse(rawItems);
   } catch {
     return { error: "Revisa los datos de las piezas (nombre, categoría y precio)." };
   }
@@ -68,9 +72,59 @@ export async function updateSale(
   const saleDate = new Date(data.saleDate);
   if (Number.isNaN(saleDate.getTime())) return { error: "Fecha inválida." };
 
+  const categories = await prisma.category.findMany();
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+
   try {
     await prisma.$transaction(async (tx) => {
+      // Piezas que estaban en la venta y ya no vienen en el formulario: se quitaron al corregir.
+      const current = await tx.sale.findUnique({
+        where: { id: saleId },
+        include: { items: { include: { part: { include: { partType: true } } } } },
+      });
+      if (!current) throw new Error("La venta ya no existe.");
+
+      const keptIds = new Set(items.map((i) => i.itemId).filter(Boolean));
+      const removed = current.items.filter((si) => !keptIds.has(si.id));
+      for (const si of removed) {
+        const migrated =
+          current.notes?.includes("Migrado de WhatsApp") ||
+          si.part.partType.description?.includes("Migrado de WhatsApp") ||
+          si.part.notes === FREE_SALE_NOTE;
+        await tx.saleItem.delete({ where: { id: si.id } });
+        if (migrated) {
+          await tx.part.delete({ where: { id: si.part.id } });
+          const remaining = await tx.part.count({ where: { partTypeId: si.part.partTypeId } });
+          if (remaining === 0 && !si.part.partType.catalog) {
+            await tx.partType.delete({ where: { id: si.part.partTypeId } });
+          }
+        } else {
+          await tx.part.update({ where: { id: si.part.id }, data: { status: "AVAILABLE" } });
+        }
+      }
+
       for (const item of items) {
+        if (!item.itemId) {
+          // Pieza nueva agregada al corregir la venta: se crea suelta (sin inventario), igual
+          // que una pieza de texto libre en Nueva venta.
+          const categoryName = categoryNameById.get(item.categoryId);
+          if (!categoryName) throw new Error("Categoría inválida.");
+          const partType = await tx.partType.create({ data: { name: item.name, categoryId: item.categoryId } });
+          const part = await tx.part.create({
+            data: {
+              sku: await generateSku(categoryName),
+              partTypeId: partType.id,
+              sourceVehicleId: item.sourceVehicleId || null,
+              status: "SOLD",
+              cost: 0,
+              price: item.priceSold,
+              notes: FREE_SALE_NOTE,
+            },
+          });
+          await tx.saleItem.create({ data: { saleId, partId: part.id, priceSold: item.priceSold } });
+          continue;
+        }
+
         const saleItem = await tx.saleItem.findUnique({
           where: { id: item.itemId },
           include: { part: { include: { partType: true } } },

@@ -117,6 +117,9 @@ enum PartZone {
   INTERIOR
   MECHANICAL
   EXTERIOR
+  DOCUMENTS // papeles del vehículo (matrícula, contrato, etc.)
+  SCRAP // chatarra de taller, no es una pieza específica de un vehículo
+  COMPLETE // venta del vehículo completo (o casi completo), no piezas sueltas
 }
 
 enum PartCondition {

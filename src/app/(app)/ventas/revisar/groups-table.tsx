@@ -1,11 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/format";
 import { AssignRow } from "./assign-row";
+import { deleteUnmatchedGroup } from "./actions";
 
 type Group = { text: string; count: number; revenue: number; vehicles: string[]; current?: string };
 
@@ -20,13 +33,33 @@ export function GroupsTable({
   groups: Group[];
   emptyMessage: string;
 }) {
+  const router = useRouter();
+  const [rows, setRows] = useState(groups);
   const [filter, setFilter] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const tokens = norm(filter).split(/\s+/).filter(Boolean);
-  const visible = groups.filter((g) => {
+  const visible = rows.filter((g) => {
     const n = norm(g.text);
     return tokens.every((t) => n.includes(t));
   });
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    const text = deleteTarget.text;
+    startTransition(async () => {
+      const r = await deleteUnmatchedGroup(text);
+      if (r.error) {
+        toast.error(r.error);
+        return;
+      }
+      setRows((rs) => rs.filter((g) => g.text !== text));
+      toast.success(`Eliminadas ${r.deleted} pieza${r.deleted === 1 ? "" : "s"}`);
+      setDeleteTarget(null);
+      router.refresh();
+    });
+  }
 
   return (
     <div className="space-y-3">
@@ -41,7 +74,7 @@ export function GroupsTable({
         />
         {filter && (
           <p className="mt-1.5 text-xs text-muted-foreground">
-            {visible.length} de {groups.length}
+            {visible.length} de {rows.length}
           </p>
         )}
       </div>
@@ -53,6 +86,7 @@ export function GroupsTable({
             <TableHead className="text-right">Total</TableHead>
             {kind === "unmatched" && <TableHead>Autos</TableHead>}
             <TableHead>{kind === "unmatched" ? "Asignar a" : "Asignada a"}</TableHead>
+            {kind === "unmatched" && <TableHead />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,17 +103,49 @@ export function GroupsTable({
               <TableCell>
                 <AssignRow text={g.text} kind={kind} initial={g.current} />
               </TableCell>
+              {kind === "unmatched" && (
+                <TableCell>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    title="Eliminar (no es una pieza real)"
+                    onClick={() => setDeleteTarget(g)}
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
           {visible.length === 0 && (
             <TableRow>
-              <TableCell colSpan={kind === "unmatched" ? 5 : 4} className="text-center text-muted-foreground py-8">
-                {groups.length === 0 ? emptyMessage : "Sin resultados para esa búsqueda."}
+              <TableCell colSpan={kind === "unmatched" ? 6 : 4} className="text-center text-muted-foreground py-8">
+                {rows.length === 0 ? emptyMessage : "Sin resultados para esa búsqueda."}
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar &quot;{deleteTarget?.text}&quot;?</AlertDialogTitle>
+            <AlertDialogDescription>
+              No es una pieza real, así que se borra por completo de las {deleteTarget?.count} venta
+              {deleteTarget && deleteTarget.count > 1 ? "s" : ""} donde aparece (ajustando el total de cada una). Si
+              alguna venta se queda sin piezas, se elimina también. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+            <Button type="button" variant="destructive" disabled={isPending} onClick={confirmDelete}>
+              {isPending ? "Eliminando…" : "Sí, eliminar"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

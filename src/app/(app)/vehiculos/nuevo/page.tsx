@@ -20,7 +20,7 @@ export default async function NuevoVehiculoPage() {
         catalog={catalog.map((c) => ({
           id: c.id,
           name: c.name,
-          zone: c.zone as "INTERIOR" | "MECHANICAL" | "EXTERIOR",
+          zone: c.zone as "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE",
           kept: c.kept,
         }))}
       />

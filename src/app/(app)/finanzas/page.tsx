@@ -7,7 +7,9 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { formatCurrency, formatDate } from "@/lib/format";
 import { expenseCategoryLabels } from "@/lib/labels";
 import {
+  COMMISSION_RATE,
   currentMonthPeriod,
+  getEmployeeSales,
   getFinancialSummary,
   getMonthlySales,
   getTopSellingParts,
@@ -21,6 +23,9 @@ const ZONE_LABELS: Record<string, string> = {
   INTERIOR: "Interior",
   MECHANICAL: "Mecánico",
   EXTERIOR: "Exterior",
+  DOCUMENTS: "Documentos",
+  SCRAP: "Chatarra",
+  COMPLETE: "Completo",
 };
 
 const selectClass =
@@ -44,7 +49,7 @@ export default async function FinanzasPage({
   const period = currentMonthPeriod();
   const range = { from: parseDay(from), to: parseDay(to, true) };
 
-  const [summary, monthlySales, topParts, expenses, vehicles, profitability, vehicleSales] = await Promise.all([
+  const [summary, monthlySales, topParts, expenses, vehicles, profitability, vehicleSales, employeeSales] = await Promise.all([
     getFinancialSummary(period),
     getMonthlySales(6),
     getTopSellingParts(5),
@@ -52,6 +57,7 @@ export default async function FinanzasPage({
     prisma.sourceVehicle.findMany({ orderBy: { purchaseDate: "desc" } }),
     getVehicleProfitability(range),
     vehicleId ? getVehicleSales(vehicleId, range) : Promise.resolve([]),
+    getEmployeeSales(range),
   ]);
 
   const shownRows = (vehicleId ? profitability.rows.filter((r) => r.id === vehicleId) : profitability.rows)
@@ -230,6 +236,69 @@ export default async function FinanzasPage({
                 </Table>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Ventas y comisión por empleado</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Cuánto vendió cada empleado y su comisión del {COMMISSION_RATE * 100}%. Usa el mismo rango de fechas del
+            filtro de arriba (Desde/Hasta).
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Empleado</TableHead>
+                <TableHead className="text-right">Ventas</TableHead>
+                <TableHead className="text-right">Vendió</TableHead>
+                <TableHead className="text-right">Comisión ({COMMISSION_RATE * 100}%)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {employeeSales.rows.map((e) => (
+                <TableRow key={e.id}>
+                  <TableCell className="font-medium">{e.name}</TableCell>
+                  <TableCell className="text-right">{e.salesCount}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(e.revenue)}</TableCell>
+                  <TableCell className="text-right font-semibold text-emerald-600">
+                    {formatCurrency(e.commission)}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {employeeSales.rows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    No hay ventas con empleado asignado en ese rango.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+            {employeeSales.rows.length > 0 && (
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="font-semibold">Total</TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {employeeSales.rows.reduce((s, e) => s + e.salesCount, 0)}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {formatCurrency(employeeSales.rows.reduce((s, e) => s + e.revenue, 0))}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {formatCurrency(employeeSales.rows.reduce((s, e) => s + e.commission, 0))}
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            )}
+          </Table>
+          {employeeSales.unassigned.salesCount > 0 && (
+            <p className="px-6 py-3 text-xs text-muted-foreground">
+              Además hay {employeeSales.unassigned.salesCount} ventas sin empleado asignado por{" "}
+              {formatCurrency(employeeSales.unassigned.revenue)}, que no entran en esta tabla.
+            </p>
           )}
         </CardContent>
       </Card>

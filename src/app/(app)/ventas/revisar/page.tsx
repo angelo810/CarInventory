@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CatalogProvider } from "./assign-row";
 import { GroupsTable } from "./groups-table";
+import { ConfirmAllButton } from "./confirm-all-button";
 
 const SOLD_AS = "Vendida como: ";
 const FLAGS = /( \((lado no especificado|revisar|asignada)\))+$/;
@@ -75,11 +76,14 @@ export default async function RevisarPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Coincidencias por confirmar ({reviewList.length})</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            El sistema propuso una pieza del catálogo pero con poca seguridad. Corrígela o confírmala.
-          </p>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">Coincidencias por confirmar ({reviewList.length})</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              El sistema propuso una pieza del catálogo pero con poca seguridad. Corrígela o confírmala.
+            </p>
+          </div>
+          <ConfirmAllButton count={reviewList.length} />
         </CardHeader>
         <CardContent className="p-0">
           <GroupsTable

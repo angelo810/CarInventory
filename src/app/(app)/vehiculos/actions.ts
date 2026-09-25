@@ -24,7 +24,7 @@ const vehicleSchema = z.object({
 
 const extraSchema = z.object({
   name: z.string().trim().min(1),
-  zone: z.enum(["INTERIOR", "MECHANICAL", "EXTERIOR"]),
+  zone: z.enum(["INTERIOR", "MECHANICAL", "EXTERIOR", "DOCUMENTS", "SCRAP", "COMPLETE"]),
   qty: z.coerce.number().int().min(1).max(50),
   addToCatalog: z.boolean().optional(),
 });
@@ -59,7 +59,14 @@ export async function createVehicle(
 
   const categories = await prisma.category.findMany();
   const categoryByName = new Map(categories.map((c) => [c.name, c]));
-  const zoneFallback = { INTERIOR: "Interior", MECHANICAL: "Motor", EXTERIOR: "Carrocería" } as const;
+  const zoneFallback = {
+    INTERIOR: "Interior",
+    MECHANICAL: "Motor",
+    EXTERIOR: "Carrocería",
+    DOCUMENTS: "Documentos",
+    SCRAP: "Chatarra",
+    COMPLETE: "Otro",
+  } as const;
 
   let vehicleId: string;
   try {
@@ -157,7 +164,7 @@ const inventoryChangeSchema = z.object({
 
 const inventoryExtraSchema = z.object({
   name: z.string().trim().min(1),
-  zone: z.enum(["INTERIOR", "MECHANICAL", "EXTERIOR"]),
+  zone: z.enum(["INTERIOR", "MECHANICAL", "EXTERIOR", "DOCUMENTS", "SCRAP", "COMPLETE"]),
   qty: z.coerce.number().int().min(1).max(50),
   price: z.coerce.number().min(0),
 });
@@ -181,7 +188,14 @@ export async function saveVehicleInventory(
 
   const categories = await prisma.category.findMany();
   const categoryByName = new Map(categories.map((c) => [c.name, c]));
-  const zoneFallback = { INTERIOR: "Interior", MECHANICAL: "Motor", EXTERIOR: "Carrocería" } as const;
+  const zoneFallback = {
+    INTERIOR: "Interior",
+    MECHANICAL: "Motor",
+    EXTERIOR: "Carrocería",
+    DOCUMENTS: "Documentos",
+    SCRAP: "Chatarra",
+    COMPLETE: "Otro",
+  } as const;
 
   let created = 0;
   let removed = 0;

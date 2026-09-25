@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "PartZone" ADD VALUE 'DOCUMENTS';

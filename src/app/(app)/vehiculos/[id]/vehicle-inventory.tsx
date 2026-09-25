@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "OTHER";
+type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE" | "OTHER";
 
 export type InventoryRow = {
   partTypeId: string;
@@ -32,6 +32,9 @@ const ZONES: { value: Zone; label: string }[] = [
   { value: "INTERIOR", label: "Interior" },
   { value: "MECHANICAL", label: "Mecánico" },
   { value: "EXTERIOR", label: "Exterior" },
+  { value: "DOCUMENTS", label: "Documentos" },
+  { value: "SCRAP", label: "Chatarra" },
+  { value: "COMPLETE", label: "Completo" },
   { value: "OTHER", label: "Otras" },
 ];
 
@@ -70,22 +73,34 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
   const validExtras = extras.filter((e) => e.name.trim());
   const pendingChanges = dirty.length + validExtras.length;
 
+  // En "Vendidas" no tiene sentido separar por zona (interior/mecánico/...): se busca la pieza
+  // vendida directamente, así que se muestran todas juntas con el buscador.
+  const groupBySold = filter === "sold";
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
-      if (r.zone !== zone) return false;
+      if (!groupBySold && r.zone !== zone) return false;
       const e = edits[r.partTypeId];
-      if (zone === "EXTERIOR" && !showAllExterior && !r.kept && e.qty === 0 && r.sold === 0) return false;
+      if (!groupBySold && zone === "EXTERIOR" && !showAllExterior && !r.kept && e.qty === 0 && r.sold === 0) return false;
       if (q && !r.name.toLowerCase().includes(q)) return false;
       if (filter === "available") return e.qty > 0;
       if (filter === "sold") return r.sold > 0;
       if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0;
       return true;
     });
-  }, [rows, edits, zone, search, filter, showAllExterior]);
+  }, [rows, edits, zone, search, filter, showAllExterior, groupBySold]);
 
   const zoneCounts = useMemo(() => {
-    const c: Record<Zone, number> = { INTERIOR: 0, MECHANICAL: 0, EXTERIOR: 0, OTHER: 0 };
+    const c: Record<Zone, number> = {
+      INTERIOR: 0,
+      MECHANICAL: 0,
+      EXTERIOR: 0,
+      DOCUMENTS: 0,
+      SCRAP: 0,
+      COMPLETE: 0,
+      OTHER: 0,
+    };
     for (const r of rows) c[r.zone] += edits[r.partTypeId].qty;
     return c;
   }, [rows, edits]);
@@ -138,16 +153,18 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Tabs value={zone} onValueChange={(v) => setZone(v as Zone)}>
-          <TabsList>
-            {ZONES.map((z) => (
-              <TabsTrigger key={z.value} value={z.value}>
-                {z.label}
-                <span className="ml-1.5 text-xs text-muted-foreground">{zoneCounts[z.value]}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {!groupBySold && (
+          <Tabs value={zone} onValueChange={(v) => setZone(v as Zone)}>
+            <TabsList>
+              {ZONES.map((z) => (
+                <TabsTrigger key={z.value} value={z.value}>
+                  {z.label}
+                  <span className="ml-1.5 text-xs text-muted-foreground">{zoneCounts[z.value]}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full sm:w-60">
@@ -170,7 +187,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
               {f.label}
             </Button>
           ))}
-          {zone === "EXTERIOR" && (
+          {!groupBySold && zone === "EXTERIOR" && (
             <label className="flex items-center gap-2 text-sm text-muted-foreground ml-auto">
               <input type="checkbox" checked={showAllExterior} onChange={(e) => setShowAllExterior(e.target.checked)} />
               Ver también las que normalmente no se guardan ({hiddenExterior})
