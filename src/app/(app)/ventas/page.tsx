@@ -24,18 +24,41 @@ const ZONE_LABELS: Record<string, string> = {
 const selectClass =
   "h-8 rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-type Params = { q?: string; vehicleId?: string; employeeId?: string; page?: string; vista?: string };
+type Params = {
+  q?: string;
+  vehicleId?: string;
+  employeeId?: string;
+  from?: string;
+  to?: string;
+  page?: string;
+  vista?: string;
+};
+
+function parseDay(value?: string, endOfDay = false) {
+  if (!value) return undefined;
+  const d = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return undefined;
+  d.setHours(0, 0, 0, 0);
+  if (endOfDay) d.setDate(d.getDate() + 1);
+  return d;
+}
 
 export default async function VentasPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const { q, vehicleId, employeeId, page, vista } = await searchParams;
+  const { q, vehicleId, employeeId, from, to, page, vista } = await searchParams;
   const currentPage = Math.max(1, Number(page) || 1);
   const query = q?.trim();
   const byPiece = vista !== "ventas";
+
+  const dateFrom = parseDay(from);
+  const dateTo = parseDay(to, true);
+  const dateFilter =
+    dateFrom || dateTo ? { ...(dateFrom ? { gte: dateFrom } : {}), ...(dateTo ? { lt: dateTo } : {}) } : undefined;
 
   const contains = (v: string) => ({ contains: v, mode: "insensitive" as const });
 
   // Filtro a nivel de venta
   const saleAnd: Prisma.SaleWhereInput[] = [];
+  if (dateFilter) saleAnd.push({ saleDate: dateFilter });
   if (query) {
     saleAnd.push({
       OR: [
@@ -64,6 +87,7 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
 
   // Filtro a nivel de pieza vendida
   const itemAnd: Prisma.SaleItemWhereInput[] = [];
+  if (dateFilter) itemAnd.push({ sale: { saleDate: dateFilter } });
   if (query) {
     itemAnd.push({
       OR: [
@@ -127,13 +151,13 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
 
   function href(overrides: Partial<Params>) {
     const params = new URLSearchParams();
-    const merged = { q: query, vehicleId, employeeId, vista, ...overrides };
+    const merged = { q: query, vehicleId, employeeId, from, to, vista, ...overrides };
     for (const [k, v] of Object.entries(merged)) if (v) params.set(k, String(v));
     const s = params.toString();
     return s ? `/ventas?${s}` : "/ventas";
   }
 
-  const hasFilters = Boolean(query || vehicleId || employeeId);
+  const hasFilters = Boolean(query || vehicleId || employeeId || from || to);
   const unit = byPiece ? "pieza" : "venta";
 
   return (
@@ -198,9 +222,31 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
             </option>
           ))}
         </select>
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Desde
+          <Input key={from ?? ""} type="date" name="from" defaultValue={from ?? ""} className="h-8 w-40" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Hasta
+          <Input key={to ?? ""} type="date" name="to" defaultValue={to ?? ""} className="h-8 w-40" />
+        </label>
         <Button type="submit">Filtrar</Button>
         {hasFilters && (
-          <Button variant="ghost" render={<Link href={href({ q: undefined, vehicleId: undefined, employeeId: undefined })} />} nativeButton={false}>
+          <Button
+            variant="ghost"
+            render={
+              <Link
+                href={href({
+                  q: undefined,
+                  vehicleId: undefined,
+                  employeeId: undefined,
+                  from: undefined,
+                  to: undefined,
+                })}
+              />
+            }
+            nativeButton={false}
+          >
             Limpiar
           </Button>
         )}
@@ -368,6 +414,8 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
               {query && <input type="hidden" name="q" value={query} />}
               {vehicleId && <input type="hidden" name="vehicleId" value={vehicleId} />}
               {employeeId && <input type="hidden" name="employeeId" value={employeeId} />}
+              {from && <input type="hidden" name="from" value={from} />}
+              {to && <input type="hidden" name="to" value={to} />}
               {vista === "ventas" && <input type="hidden" name="vista" value="ventas" />}
               <span className="text-muted-foreground">Ir a</span>
               <Input
