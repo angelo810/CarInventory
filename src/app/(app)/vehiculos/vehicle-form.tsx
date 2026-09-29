@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState, useMemo, useState, useTransition } from "react";
-import { Check, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { Check, Combine, Minus, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { createVehicle } from "./actions";
-import { deletePartType } from "@/app/(app)/piezas/actions";
+import { deletePartType, renamePartType } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE";
@@ -65,6 +66,9 @@ export function VehicleForm({
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
   const [isDeleting, startDelete] = useTransition();
+  const [mergeTarget, setMergeTarget] = useState<CatalogItem | null>(null);
+  const [mergeQuery, setMergeQuery] = useState("");
+  const [isMerging, startMerge] = useTransition();
 
   function confirmDelete() {
     if (!deleteTarget) return;
@@ -79,6 +83,31 @@ export function VehicleForm({
       setDeletedIds((prev) => new Set(prev).add(target.id));
       toast.success(`"${target.name}" se quitó del catálogo.`);
       setDeleteTarget(null);
+    });
+  }
+
+  const mergeOptions = useMemo(() => {
+    if (!mergeTarget) return [];
+    const q = mergeQuery.trim().toLowerCase();
+    return catalog
+      .filter((c) => c.id !== mergeTarget.id && !deletedIds.has(c.id))
+      .filter((c) => !q || c.name.toLowerCase().includes(q))
+      .slice(0, 30);
+  }, [catalog, deletedIds, mergeTarget, mergeQuery]);
+
+  function confirmMerge(target: CatalogItem) {
+    if (!mergeTarget) return;
+    const source = mergeTarget;
+    startMerge(async () => {
+      const result = await renamePartType(source.id, target.name);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      setDeletedIds((prev) => new Set(prev).add(source.id));
+      toast.success(`"${source.name}" se fusionó con "${target.name}".`);
+      setMergeTarget(null);
+      setMergeQuery("");
     });
   }
 
@@ -323,15 +352,29 @@ export function VehicleForm({
                     </div>
                   )}
                   {n === 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      title="Quitar del catálogo (es duplicada o ya no se usa)"
-                      onClick={() => setDeleteTarget(item)}
-                    >
-                      <Trash2 className="size-3.5 text-destructive" />
-                    </Button>
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        title="Fusionar con otra pieza del catálogo (estandarizar nombre)"
+                        onClick={() => {
+                          setMergeTarget(item);
+                          setMergeQuery("");
+                        }}
+                      >
+                        <Combine className="size-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        title="Quitar del catálogo (es duplicada o ya no se usa)"
+                        onClick={() => setDeleteTarget(item)}
+                      >
+                        <Trash2 className="size-3.5 text-destructive" />
+                      </Button>
+                    </>
                   )}
                 </div>
               );
@@ -435,8 +478,8 @@ export function VehicleForm({
             <AlertDialogTitle>¿Quitar &quot;{deleteTarget?.name}&quot; del catálogo?</AlertDialogTitle>
             <AlertDialogDescription>
               Deja de aparecer al registrar vehículos y piezas nuevas. Solo se puede quitar si nunca se usó en
-              ninguna pieza física; si ya se usó en algún vehículo, no se podrá borrar y hay que fusionarla desde
-              &quot;Organizar tipos&quot; en su lugar. Esta acción no se puede deshacer.
+              ninguna pieza física; si ya se usó en algún vehículo, no se podrá borrar y hay que fusionarla con el
+              botón &quot;Fusionar&quot; en su lugar. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -447,6 +490,43 @@ export function VehicleForm({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!mergeTarget} onOpenChange={(open) => !open && setMergeTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Fusionar &quot;{mergeTarget?.name}&quot; con…</DialogTitle>
+            <DialogDescription>
+              Elige la pieza que quieres conservar. Todas las piezas ya vendidas o registradas como &quot;
+              {mergeTarget?.name}&quot; (en cualquier vehículo) pasan a llamarse así, y &quot;{mergeTarget?.name}&quot;
+              desaparece del catálogo. No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={mergeQuery}
+            onChange={(e) => setMergeQuery(e.target.value)}
+            placeholder="Buscar pieza…"
+            className="mt-1"
+          />
+          <div className="max-h-64 overflow-y-auto rounded-md border divide-y">
+            {mergeOptions.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                disabled={isMerging}
+                onClick={() => confirmMerge(o)}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50"
+              >
+                <span>{o.name}</span>
+                <span className="text-xs text-muted-foreground">{ZONES.find((z) => z.value === o.zone)?.label}</span>
+              </button>
+            ))}
+            {mergeOptions.length === 0 && (
+              <p className="px-3 py-6 text-center text-sm text-muted-foreground">Sin resultados.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

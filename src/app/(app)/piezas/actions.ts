@@ -276,7 +276,7 @@ export async function deletePartType(id: string): Promise<{ error?: string }> {
   if (!type) return { error: "No encontré esa pieza." };
   if (type._count.parts > 0) {
     return {
-      error: `"${type.name}" ya se usó en ${type._count.parts} pieza${type._count.parts === 1 ? "" : "s"}. Para unificarla, cámbiale el nombre desde "Organizar tipos" al de la pieza que quieres conservar (se fusionan solas).`,
+      error: `"${type.name}" ya se usó en ${type._count.parts} pieza${type._count.parts === 1 ? "" : "s"}. Usa el botón "Fusionar" (junto al de quitar) para unificarla con otra pieza sin perder ese historial.`,
     };
   }
 
