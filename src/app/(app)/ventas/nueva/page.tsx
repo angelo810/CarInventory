@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { SaleForm } from "./sale-form";
 
 function toLocalInput(d: Date) {
@@ -7,10 +8,11 @@ function toLocalInput(d: Date) {
 }
 
 export default async function NuevaVentaPage() {
+  const business = await getActiveBusiness();
   const [employees, vehicles] = await Promise.all([
     prisma.employee.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
     prisma.sourceVehicle.findMany({
-      where: { status: { not: "ARCHIVED" } },
+      where: { business, status: { not: "ARCHIVED" } },
       orderBy: [{ brand: "asc" }, { model: "asc" }],
     }),
   ]);

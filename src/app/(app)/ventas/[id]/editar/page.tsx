@@ -10,17 +10,18 @@ function toLocalInput(d: Date) {
 export default async function EditarVentaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [sale, employees, vehicles, categories] = await Promise.all([
-    prisma.sale.findUnique({
-      where: { id },
-      include: { items: { include: { part: { include: { partType: true } } } } },
-    }),
-    prisma.employee.findMany({ orderBy: { name: "asc" } }),
-    prisma.sourceVehicle.findMany({ orderBy: [{ brand: "asc" }, { model: "asc" }] }),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
-  ]);
+  const sale = await prisma.sale.findUnique({
+    where: { id },
+    include: { items: { include: { part: { include: { partType: true } } } } },
+  });
 
   if (!sale) notFound();
+
+  const [employees, vehicles, categories] = await Promise.all([
+    prisma.employee.findMany({ orderBy: { name: "asc" } }),
+    prisma.sourceVehicle.findMany({ where: { business: sale.business }, orderBy: [{ brand: "asc" }, { model: "asc" }] }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div className="space-y-6 max-w-3xl">

@@ -8,6 +8,7 @@ import { PaymentMethod } from "@/generated/prisma/enums";
 import { generateSku } from "@/lib/sku";
 import { inferCategory } from "@/lib/categorize";
 import { assertAdmin } from "@/lib/auth-guard";
+import { getActiveBusiness } from "@/lib/business";
 
 const newItemSchema = z
   .object({
@@ -83,6 +84,7 @@ export async function updateSale(
         include: { items: { include: { part: { include: { partType: true } } } } },
       });
       if (!current) throw new Error("La venta ya no existe.");
+      const business = current.business;
 
       const keptIds = new Set(items.map((i) => i.itemId).filter(Boolean));
       const removed = current.items.filter((si) => !keptIds.has(si.id));
@@ -109,9 +111,10 @@ export async function updateSale(
           // que una pieza de texto libre en Nueva venta.
           const categoryName = categoryNameById.get(item.categoryId);
           if (!categoryName) throw new Error("Categoría inválida.");
-          const partType = await tx.partType.create({ data: { name: item.name, categoryId: item.categoryId } });
+          const partType = await tx.partType.create({ data: { business, name: item.name, categoryId: item.categoryId } });
           const part = await tx.part.create({
             data: {
+              business,
               sku: await generateSku(categoryName),
               partTypeId: partType.id,
               sourceVehicleId: item.sourceVehicleId || null,
@@ -137,7 +140,7 @@ export async function updateSale(
           const shared = partType.catalog || (await tx.part.count({ where: { partTypeId: partType.id } })) > 1;
           if (shared) {
             const created = await tx.partType.create({
-              data: { name: item.name, categoryId: item.categoryId },
+              data: { business, name: item.name, categoryId: item.categoryId },
             });
             partTypeId = created.id;
           } else {
@@ -198,11 +201,12 @@ export async function createSale(
   const saleDate = new Date(data.saleDate);
   if (Number.isNaN(saleDate.getTime())) return { error: "Fecha inválida." };
 
+  const business = await getActiveBusiness();
   const partIds = items.map((i) => i.partId).filter((id): id is string => Boolean(id));
   if (new Set(partIds).size !== partIds.length) return { error: "Una pieza del inventario está repetida." };
 
   const inventoryParts = partIds.length
-    ? await prisma.part.findMany({ where: { id: { in: partIds } }, include: { partType: true } })
+    ? await prisma.part.findMany({ where: { id: { in: partIds }, business }, include: { partType: true } })
     : [];
   const partById = new Map(inventoryParts.map((p) => [p.id, p]));
   for (const id of partIds) {
@@ -250,6 +254,7 @@ export async function createSale(
       for (const group of byVehicle.values()) {
         const sale = await tx.sale.create({
           data: {
+            business,
             saleDate,
             employeeId: data.employeeId || null,
             paymentMethod: data.paymentMethod,
@@ -268,9 +273,10 @@ export async function createSale(
             if (updated.count !== 1) throw new Error("Una pieza del inventario ya fue vendida.");
             await tx.saleItem.create({ data: { saleId: sale.id, partId: e.partId, priceSold: e.priceSold } });
           } else {
-            const partType = await tx.partType.create({ data: { name: e.name, categoryId: e.categoryId } });
+            const partType = await tx.partType.create({ data: { business, name: e.name, categoryId: e.categoryId } });
             const part = await tx.part.create({
               data: {
+                business,
                 sku: e.sku,
                 partTypeId: partType.id,
                 sourceVehicleId: e.sourceVehicleId || null,

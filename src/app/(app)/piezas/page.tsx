@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import type { Prisma } from "@/generated/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,8 +41,9 @@ export default async function PiezasPage({ searchParams }: { searchParams: Promi
   const isAdmin = session?.user?.role === "ADMIN";
   const currentPage = Math.max(1, Number(page) || 1);
   const query = q?.trim();
+  const business = await getActiveBusiness();
 
-  const and: Prisma.PartWhereInput[] = [];
+  const and: Prisma.PartWhereInput[] = [{ business }];
   if (status && status !== "ALL") and.push({ status: status as never });
   if (zone && zone !== "ALL") {
     and.push(

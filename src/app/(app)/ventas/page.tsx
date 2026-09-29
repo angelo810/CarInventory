@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import type { Prisma } from "@/generated/prisma/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
   const currentPage = Math.max(1, Number(page) || 1);
   const query = q?.trim();
   const byPiece = vista !== "ventas";
+  const business = await getActiveBusiness();
 
   const dateFrom = parseDay(from);
   const dateTo = parseDay(to, true);
@@ -57,7 +59,7 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
   const contains = (v: string) => ({ contains: v, mode: "insensitive" as const });
 
   // Filtro a nivel de venta
-  const saleAnd: Prisma.SaleWhereInput[] = [];
+  const saleAnd: Prisma.SaleWhereInput[] = [{ business }];
   if (dateFilter) saleAnd.push({ saleDate: dateFilter });
   if (query) {
     saleAnd.push({
@@ -86,7 +88,7 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
   const saleWhere: Prisma.SaleWhereInput = saleAnd.length ? { AND: saleAnd } : {};
 
   // Filtro a nivel de pieza vendida
-  const itemAnd: Prisma.SaleItemWhereInput[] = [];
+  const itemAnd: Prisma.SaleItemWhereInput[] = [{ sale: { business } }];
   if (dateFilter) itemAnd.push({ sale: { saleDate: dateFilter } });
   if (query) {
     itemAnd.push({
@@ -105,7 +107,7 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
   const itemWhere: Prisma.SaleItemWhereInput = itemAnd.length ? { AND: itemAnd } : {};
 
   const [vehicles, employees] = await Promise.all([
-    prisma.sourceVehicle.findMany({ orderBy: [{ brand: "asc" }, { model: "asc" }] }),
+    prisma.sourceVehicle.findMany({ where: { business }, orderBy: [{ brand: "asc" }, { model: "asc" }] }),
     prisma.employee.findMany({ orderBy: { name: "asc" } }),
   ]);
 

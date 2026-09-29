@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { assertAdmin } from "@/lib/auth-guard";
+import { getActiveBusiness } from "@/lib/business";
 
 const SOLD_AS = "Vendida como: ";
 const FLAGS = /( \((lado no especificado|revisar|asignada)\))+$/;
@@ -18,14 +19,16 @@ export async function assignCatalogPart(input: {
   const name = input.catalogName.trim();
   if (!name) return { error: "Escribe o elige el nombre de la pieza del catálogo." };
 
+  const business = await getActiveBusiness();
   const catalogType = await prisma.partType.findFirst({
-    where: { name: { equals: name, mode: "insensitive" } },
+    where: { business, name: { equals: name, mode: "insensitive" } },
     orderBy: { catalog: "desc" },
   });
   if (!catalogType) return { error: `No encontré "${name}" en el catálogo. Elígela de la lista.` };
 
   const candidates = await prisma.part.findMany({
     where: {
+      business,
       status: "SOLD",
       notes: { startsWith: `${SOLD_AS}${input.text}` },
       partType: { catalog: input.kind === "review" },
@@ -64,8 +67,10 @@ export async function deleteUnmatchedGroup(text: string): Promise<{ error?: stri
   const denied = await assertAdmin();
   if (denied) return denied;
 
+  const business = await getActiveBusiness();
   const candidates = await prisma.part.findMany({
     where: {
+      business,
       status: "SOLD",
       notes: { startsWith: `${SOLD_AS}${text}` },
       partType: { catalog: false },
@@ -116,6 +121,8 @@ export async function confirmAllReviewMatches(): Promise<{ error?: string; confi
   const denied = await assertAdmin();
   if (denied) return denied;
 
+  const business = await getActiveBusiness();
+
   // Una sola sentencia (en vez de una actualización por pieza dentro de una transacción larga,
   // que en Neon se corta por tiempo con cientos de filas).
   const result = await prisma.$executeRaw`
@@ -123,6 +130,7 @@ export async function confirmAllReviewMatches(): Promise<{ error?: string; confi
     SET notes = REPLACE(p.notes, ' (revisar)', '')
     FROM "PartType" pt
     WHERE p."partTypeId" = pt.id
+      AND p.business = ${business}::"Business"
       AND p.status = 'SOLD'
       AND pt.catalog = true
       AND p.notes LIKE '%(revisar)%'

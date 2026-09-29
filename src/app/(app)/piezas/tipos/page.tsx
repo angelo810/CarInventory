@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { Button } from "@/components/ui/button";
 import { TypesManager } from "./types-manager";
 
 export default async function TiposPage() {
+  const business = await getActiveBusiness();
   const types = await prisma.partType.findMany({
+    where: { business },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     select: { id: true, name: true, zone: true, catalog: true, _count: { select: { parts: true } } },
   });

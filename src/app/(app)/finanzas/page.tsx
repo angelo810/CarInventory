@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,16 +49,17 @@ export default async function FinanzasPage({
   const { vehicleId, from, to } = await searchParams;
   const period = currentMonthPeriod();
   const range = { from: parseDay(from), to: parseDay(to, true) };
+  const business = await getActiveBusiness();
 
   const [summary, monthlySales, topParts, expenses, vehicles, profitability, vehicleSales, employeeSales] = await Promise.all([
-    getFinancialSummary(period),
-    getMonthlySales(6),
-    getTopSellingParts(5),
-    prisma.expense.findMany({ orderBy: { date: "desc" }, take: 20, include: { sourceVehicle: true } }),
-    prisma.sourceVehicle.findMany({ orderBy: { purchaseDate: "desc" } }),
-    getVehicleProfitability(range),
+    getFinancialSummary(period, business),
+    getMonthlySales(business, 6),
+    getTopSellingParts(business, 5),
+    prisma.expense.findMany({ where: { business }, orderBy: { date: "desc" }, take: 20, include: { sourceVehicle: true } }),
+    prisma.sourceVehicle.findMany({ where: { business }, orderBy: { purchaseDate: "desc" } }),
+    getVehicleProfitability(business, range),
     vehicleId ? getVehicleSales(vehicleId, range) : Promise.resolve([]),
-    getEmployeeSales(range),
+    getEmployeeSales(business, range),
   ]);
 
   const shownRows = (vehicleId ? profitability.rows.filter((r) => r.id === vehicleId) : profitability.rows)

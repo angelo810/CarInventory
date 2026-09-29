@@ -5,11 +5,21 @@ import { useRouter } from "next/navigation";
 import { Check, Minus, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { saveVehicleInventory } from "../actions";
+import { deletePartType } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE" | "OTHER";
@@ -58,9 +68,30 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
   const [zone, setZone] = useState<Zone>("INTERIOR");
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
-  const [showAllExterior, setShowAllExterior] = useState(false);
+  const [showAllExterior, setShowAllExterior] = useState(true);
   const [extras, setExtras] = useState<Extra[]>([]);
   const [nextKey, setNextKey] = useState(1);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [deleteTarget, setDeleteTarget] = useState<InventoryRow | null>(null);
+  const [isDeleting, startDelete] = useTransition();
+
+  const activeRows = useMemo(() => rows.filter((r) => !deletedIds.has(r.partTypeId)), [rows, deletedIds]);
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    startDelete(async () => {
+      const result = await deletePartType(target.partTypeId);
+      if (result.error) {
+        toast.error(result.error);
+        setDeleteTarget(null);
+        return;
+      }
+      setDeletedIds((prev) => new Set(prev).add(target.partTypeId));
+      toast.success(`"${target.name}" se quitó del catálogo.`);
+      setDeleteTarget(null);
+    });
+  }
 
   const dirty = useMemo(
     () =>
@@ -79,7 +110,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
+    return activeRows.filter((r) => {
       if (!groupBySold && r.zone !== zone) return false;
       const e = edits[r.partTypeId];
       if (!groupBySold && zone === "EXTERIOR" && !showAllExterior && !r.kept && e.qty === 0 && r.sold === 0) return false;
@@ -89,7 +120,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
       if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0;
       return true;
     });
-  }, [rows, edits, zone, search, filter, showAllExterior, groupBySold]);
+  }, [activeRows, edits, zone, search, filter, showAllExterior, groupBySold]);
 
   const zoneCounts = useMemo(() => {
     const c: Record<Zone, number> = {
@@ -101,11 +132,11 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
       COMPLETE: 0,
       OTHER: 0,
     };
-    for (const r of rows) c[r.zone] += edits[r.partTypeId].qty;
+    for (const r of activeRows) c[r.zone] += edits[r.partTypeId].qty;
     return c;
-  }, [rows, edits]);
+  }, [activeRows, edits]);
 
-  const hiddenExterior = rows.filter((r) => r.zone === "EXTERIOR" && !r.kept).length;
+  const hiddenExterior = activeRows.filter((r) => r.zone === "EXTERIOR" && !r.kept).length;
 
   function setQty(id: string, value: number) {
     const qty = Math.max(0, Math.min(200, Math.floor(value) || 0));
@@ -221,7 +252,20 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
                 </button>
                 {r.sold > 0 && <Badge variant="destructive">{r.sold} vendida{r.sold > 1 ? "s" : ""}</Badge>}
                 {r.other > 0 && <Badge variant="secondary">{r.other} reservada{r.other > 1 ? "s" : ""}</Badge>}
-                {!has && r.sold === 0 && r.other === 0 && <Badge variant="outline">No la trae</Badge>}
+                {!has && r.sold === 0 && r.other === 0 && (
+                  <>
+                    <Badge variant="outline">No la trae</Badge>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      title="Quitar del catálogo (es duplicada o ya no se usa)"
+                      onClick={() => setDeleteTarget(r)}
+                    >
+                      <Trash2 className="size-3.5 text-destructive" />
+                    </Button>
+                  </>
+                )}
                 {has && (
                   <>
                     <div className="flex items-center gap-1">
@@ -359,6 +403,25 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
           </div>
         )}
       </CardContent>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Quitar &quot;{deleteTarget?.name}&quot; del catálogo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deja de aparecer al registrar vehículos y piezas nuevas. Solo se puede quitar si nunca se usó en
+              ninguna pieza física; si ya se usó en algún vehículo, no se podrá borrar y hay que fusionarla desde
+              &quot;Organizar tipos&quot; en su lugar. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <Button type="button" variant="destructive" disabled={isDeleting} onClick={confirmDelete}>
+              {isDeleting ? "Quitando…" : "Sí, quitar"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

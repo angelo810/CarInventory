@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ExpenseCategory } from "@/generated/prisma/enums";
 import { assertAdmin } from "@/lib/auth-guard";
+import { getActiveBusiness } from "@/lib/business";
 
 const expenseSchema = z.object({
   category: z.nativeEnum(ExpenseCategory),
@@ -31,9 +32,11 @@ export async function createExpense(
   }
 
   const data = parsed.data;
+  const business = await getActiveBusiness();
 
   await prisma.expense.create({
     data: {
+      business,
       category: data.category,
       description: data.description,
       amount: data.amount,

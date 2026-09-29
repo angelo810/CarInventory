@@ -9,21 +9,20 @@ import { VehicleInventory, type InventoryRow } from "./vehicle-inventory";
 export default async function VehiculoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [vehicle, catalog] = await Promise.all([
-    prisma.sourceVehicle.findUnique({
-      where: { id },
-      include: {
-        parts: { include: { partType: true, saleItems: true } },
-        expenses: { orderBy: { date: "desc" } },
-      },
-    }),
-    prisma.partType.findMany({
-      where: { catalog: true, zone: { not: null } },
-      orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
-    }),
-  ]);
+  const vehicle = await prisma.sourceVehicle.findUnique({
+    where: { id },
+    include: {
+      parts: { include: { partType: true, saleItems: true } },
+      expenses: { orderBy: { date: "desc" } },
+    },
+  });
 
   if (!vehicle) notFound();
+
+  const catalog = await prisma.partType.findMany({
+    where: { business: vehicle.business, catalog: true, zone: { not: null } },
+    orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
+  });
 
   const additionalExpenses = vehicle.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
   const totalCost = Number(vehicle.purchaseCost) + additionalExpenses;

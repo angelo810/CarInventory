@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDateTime } from "@/lib/format";
@@ -12,6 +13,7 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
+  const business = await getActiveBusiness();
 
   const [part, partTypes, vehicles] = await Promise.all([
     prisma.part.findUnique({
@@ -24,12 +26,12 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
       },
     }),
     prisma.partType.findMany({
-      where: { OR: [{ catalog: true }, { parts: { some: {} } }] },
+      where: { business, OR: [{ catalog: true }, { parts: { some: {} } }] },
       include: { category: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     }),
     prisma.sourceVehicle.findMany({
-      where: { status: { not: "ARCHIVED" } },
+      where: { business, status: { not: "ARCHIVED" } },
       orderBy: { purchaseDate: "desc" },
     }),
   ]);

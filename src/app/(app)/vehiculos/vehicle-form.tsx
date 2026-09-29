@@ -1,14 +1,25 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, useTransition } from "react";
 import { Check, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { createVehicle } from "./actions";
+import { deletePartType } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE";
@@ -33,9 +44,28 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
   const [qty, setQty] = useState<Record<string, number>>({});
   const [zone, setZone] = useState<Zone>("INTERIOR");
   const [search, setSearch] = useState("");
-  const [showAllExterior, setShowAllExterior] = useState(false);
+  const [showAllExterior, setShowAllExterior] = useState(true);
   const [extras, setExtras] = useState<Extra[]>([]);
   const [nextKey, setNextKey] = useState(1);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
+  const [isDeleting, startDelete] = useTransition();
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    startDelete(async () => {
+      const result = await deletePartType(target.id);
+      if (result.error) {
+        toast.error(result.error);
+        setDeleteTarget(null);
+        return;
+      }
+      setDeletedIds((prev) => new Set(prev).add(target.id));
+      toast.success(`"${target.name}" se quitó del catálogo.`);
+      setDeleteTarget(null);
+    });
+  }
 
   const byZone = useMemo(() => {
     const map: Record<Zone, CatalogItem[]> = {
@@ -46,9 +76,9 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
       SCRAP: [],
       COMPLETE: [],
     };
-    for (const item of catalog) map[item.zone].push(item);
+    for (const item of catalog) if (!deletedIds.has(item.id)) map[item.zone].push(item);
     return map;
-  }, [catalog]);
+  }, [catalog, deletedIds]);
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -232,6 +262,17 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
                       </Button>
                     </div>
                   )}
+                  {n === 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      title="Quitar del catálogo (es duplicada o ya no se usa)"
+                      onClick={() => setDeleteTarget(item)}
+                    >
+                      <Trash2 className="size-3.5 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               );
             })}
@@ -327,6 +368,25 @@ export function VehicleForm({ catalog }: { catalog: CatalogItem[] }) {
           {isPending ? "Guardando…" : "Guardar vehículo"}
         </Button>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Quitar &quot;{deleteTarget?.name}&quot; del catálogo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deja de aparecer al registrar vehículos y piezas nuevas. Solo se puede quitar si nunca se usó en
+              ninguna pieza física; si ya se usó en algún vehículo, no se podrá borrar y hay que fusionarla desde
+              &quot;Organizar tipos&quot; en su lugar. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <Button type="button" variant="destructive" disabled={isDeleting} onClick={confirmDelete}>
+              {isDeleting ? "Quitando…" : "Sí, quitar"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }

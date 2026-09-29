@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { VehicleForm } from "../vehicle-form";
 
 export default async function NuevoVehiculoPage() {
+  const business = await getActiveBusiness();
   const catalog = await prisma.partType.findMany({
-    where: { catalog: true, zone: { not: null } },
+    where: { business, catalog: true, zone: { not: null } },
     orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
     select: { id: true, name: true, zone: true, kept: true },
   });

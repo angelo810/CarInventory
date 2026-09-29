@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,9 @@ import { sourceVehicleStatusLabels } from "@/lib/labels";
 import { Plus } from "lucide-react";
 
 export default async function VehiculosPage() {
+  const business = await getActiveBusiness();
   const vehicles = await prisma.sourceVehicle.findMany({
+    where: { business },
     orderBy: { purchaseDate: "desc" },
     include: { _count: { select: { parts: true } } },
   });

@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { inferCategory } from "@/lib/categorize";
 import { categoryCode } from "@/lib/sku";
 import { assertAdmin } from "@/lib/auth-guard";
+import { getActiveBusiness } from "@/lib/business";
 
 const vehicleSchema = z.object({
   brand: z.string().min(1, "Marca requerida"),
@@ -57,6 +58,7 @@ export async function createVehicle(
     return { error: "La lista de piezas tiene datos inválidos. Revisa cantidades y nombres de piezas extra." };
   }
 
+  const business = await getActiveBusiness();
   const categories = await prisma.category.findMany();
   const categoryByName = new Map(categories.map((c) => [c.name, c]));
   const zoneFallback = {
@@ -74,6 +76,7 @@ export async function createVehicle(
       async (tx) => {
         const vehicle = await tx.sourceVehicle.create({
           data: {
+            business,
             brand: data.brand,
             model: data.model,
             year: data.year,
@@ -91,7 +94,7 @@ export async function createVehicle(
 
         if (checklist.length) {
           const types = await tx.partType.findMany({
-            where: { id: { in: checklist.map(([id]) => id) } },
+            where: { id: { in: checklist.map(([id]) => id) }, business },
             include: { category: true },
           });
           const byId = new Map(types.map((t) => [t.id, t]));
@@ -108,6 +111,7 @@ export async function createVehicle(
           if (!category) throw new Error("No hay categorías configuradas.");
           const type = await tx.partType.create({
             data: {
+              business,
               name: extra.name,
               categoryId: category.id,
               zone: extra.zone,
@@ -125,6 +129,7 @@ export async function createVehicle(
           let i = 0;
           const rows = wanted.flatMap((w) =>
             Array.from({ length: w.qty }, () => ({
+              business,
               sku: `${categoryCode(w.categoryName)}-${seq[i++].n.toString().padStart(6, "0")}`,
               partTypeId: w.partTypeId,
               sourceVehicleId: vehicle.id,
@@ -205,6 +210,7 @@ export async function saveVehicleInventory(
       async (tx) => {
         const vehicle = await tx.sourceVehicle.findUnique({ where: { id: vehicleId } });
         if (!vehicle) throw new Error("El vehículo ya no existe.");
+        const business = vehicle.business;
 
         const newParts: { partTypeId: string; categoryName: string; price: number; cost: number }[] = [];
 
@@ -256,7 +262,7 @@ export async function saveVehicleInventory(
           const category = categoryByName.get(categoryName) ?? categoryByName.get("Otro");
           if (!category) throw new Error("No hay categorías configuradas.");
           const type = await tx.partType.create({
-            data: { name: extra.name, categoryId: category.id, zone: extra.zone, catalog: false, kept: true },
+            data: { business, name: extra.name, categoryId: category.id, zone: extra.zone, catalog: false, kept: true },
           });
           for (let i = 0; i < extra.qty; i++) {
             newParts.push({ partTypeId: type.id, categoryName: category.name, price: extra.price, cost: 0 });
@@ -267,6 +273,7 @@ export async function saveVehicleInventory(
           const seq = await tx.$queryRaw<{ n: bigint }[]>`SELECT nextval('part_sku_seq') AS n FROM generate_series(1, ${newParts.length})`;
           await tx.part.createMany({
             data: newParts.map((p, i) => ({
+              business,
               sku: `${categoryCode(p.categoryName)}-${seq[i].n.toString().padStart(6, "0")}`,
               partTypeId: p.partTypeId,
               sourceVehicleId: vehicleId,

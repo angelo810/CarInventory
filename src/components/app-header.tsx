@@ -13,13 +13,17 @@ import {
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/(app)/actions";
 import { navForRole } from "@/lib/nav";
+import { BusinessSwitcher } from "@/components/business-switcher";
+import type { Business } from "@/generated/prisma/enums";
 
 export function AppHeader({
   userEmail,
   role,
+  activeBusiness,
 }: {
   userEmail?: string | null;
   role: "ADMIN" | "SELLER" | undefined;
+  activeBusiness: Business;
 }) {
   const pathname = usePathname();
   const links = navForRole(role);
@@ -35,6 +39,9 @@ export function AppHeader({
             <SheetTitle className="sr-only">Menú</SheetTitle>
             <div className="h-14 flex items-center px-4 border-b font-semibold">
               CarInventory
+            </div>
+            <div className="p-2 border-b">
+              <BusinessSwitcher active={activeBusiness} />
             </div>
             <nav className="p-2 space-y-1">
               {links.map(({ href, label, icon: Icon }) => {

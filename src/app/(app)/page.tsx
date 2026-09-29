@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,14 +16,15 @@ export default async function DashboardPage() {
   startOfToday.setHours(0, 0, 0, 0);
   const staleDate = new Date();
   staleDate.setDate(staleDate.getDate() - STALE_DAYS);
+  const business = await getActiveBusiness();
 
   const [availableCount, salesToday, salesMonth, summary, staleParts] = await Promise.all([
-    prisma.part.count({ where: { status: "AVAILABLE" } }),
-    prisma.sale.aggregate({ _sum: { totalAmount: true }, _count: true, where: { saleDate: { gte: startOfToday } } }),
-    prisma.sale.aggregate({ _sum: { totalAmount: true }, _count: true, where: { saleDate: { gte: period.from, lt: period.to } } }),
-    getFinancialSummary(period),
+    prisma.part.count({ where: { business, status: "AVAILABLE" } }),
+    prisma.sale.aggregate({ _sum: { totalAmount: true }, _count: true, where: { business, saleDate: { gte: startOfToday } } }),
+    prisma.sale.aggregate({ _sum: { totalAmount: true }, _count: true, where: { business, saleDate: { gte: period.from, lt: period.to } } }),
+    getFinancialSummary(period, business),
     prisma.part.findMany({
-      where: { status: "AVAILABLE", createdAt: { lt: staleDate } },
+      where: { business, status: "AVAILABLE", createdAt: { lt: staleDate } },
       include: { partType: true },
       orderBy: { createdAt: "asc" },
       take: 5,

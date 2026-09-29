@@ -9,18 +9,19 @@ export type PartSearchFilters = {
   year?: number;
   categoryId?: string;
   status?: PartStatus | "ALL";
+  business: "MONEYCARS" | "INNOMUNDO";
 };
 
 const SIMILARITY_THRESHOLD = 0.25;
 
 export async function searchPartTypes(filters: PartSearchFilters) {
-  const { q, brand, model, year, categoryId, status = "AVAILABLE" } = filters;
+  const { q, brand, model, year, categoryId, status = "AVAILABLE", business } = filters;
 
   const tokens = (q ?? "").trim().split(/\s+/).filter(Boolean);
   const yearTokens = tokens.filter((t) => /^(19|20)\d{2}$/.test(t)).map(Number);
   const textTokens = tokens.filter((t) => !/^(19|20)\d{2}$/.test(t));
 
-  const conditions: Prisma.Sql[] = [];
+  const conditions: Prisma.Sql[] = [Prisma.sql`pt.business = ${business}::"Business"`];
 
   // Each free-text token must fuzzily match the part name, its category, one of its
   // compatible brand/models, or one of its unit SKUs (typo-tolerant via pg_trgm).
@@ -115,7 +116,7 @@ export async function searchPartTypes(filters: PartSearchFilters) {
     status === "ALL" ? undefined : { status: status as PartStatus };
 
   const partTypes = await prisma.partType.findMany({
-    where: { id: { in: rows.map((r) => r.id) } },
+    where: { id: { in: rows.map((r) => r.id) }, business },
     include: {
       category: true,
       compatibilities: true,

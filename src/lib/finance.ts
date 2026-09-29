@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Business } from "@/generated/prisma/enums";
 
 export type Period = { from: Date; to: Date };
 
@@ -12,19 +13,19 @@ export function currentMonthPeriod(): Period {
 const OPERATING_EXPENSE_CATEGORIES = ["WAREHOUSE", "UTILITIES", "TOOLS", "OTHER"] as const;
 const DISMANTLING_COST_CATEGORIES = ["DISMANTLING_LABOR", "TRANSPORT"] as const;
 
-export async function getFinancialSummary({ from, to }: Period) {
+export async function getFinancialSummary({ from, to }: Period, business: Business) {
   const dateFilter = { gte: from, lt: to };
 
   const [salesAgg, vehiclesAgg, dismantlingAgg, operatingAgg] = await Promise.all([
-    prisma.sale.aggregate({ _sum: { totalAmount: true }, where: { saleDate: dateFilter } }),
-    prisma.sourceVehicle.aggregate({ _sum: { purchaseCost: true }, where: { purchaseDate: dateFilter } }),
+    prisma.sale.aggregate({ _sum: { totalAmount: true }, where: { business, saleDate: dateFilter } }),
+    prisma.sourceVehicle.aggregate({ _sum: { purchaseCost: true }, where: { business, purchaseDate: dateFilter } }),
     prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { date: dateFilter, category: { in: [...DISMANTLING_COST_CATEGORIES] } },
+      where: { business, date: dateFilter, category: { in: [...DISMANTLING_COST_CATEGORIES] } },
     }),
     prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { date: dateFilter, category: { in: [...OPERATING_EXPENSE_CATEGORIES] } },
+      where: { business, date: dateFilter, category: { in: [...OPERATING_EXPENSE_CATEGORIES] } },
     }),
   ]);
 
@@ -38,12 +39,12 @@ export async function getFinancialSummary({ from, to }: Period) {
   return { income, vehicleCosts, dismantlingCosts, operatingExpenses, totalCosts, profit };
 }
 
-export async function getMonthlySales(months = 6) {
+export async function getMonthlySales(business: Business, months = 6) {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
   const sales = await prisma.sale.findMany({
-    where: { saleDate: { gte: start } },
+    where: { business, saleDate: { gte: start } },
     select: { saleDate: true, totalAmount: true },
   });
 
@@ -67,8 +68,9 @@ export async function getMonthlySales(months = 6) {
   return buckets;
 }
 
-export async function getTopSellingParts(limit = 5) {
+export async function getTopSellingParts(business: Business, limit = 5) {
   const items = await prisma.saleItem.findMany({
+    where: { sale: { business } },
     include: { part: { include: { partType: true } } },
   });
 
@@ -97,17 +99,17 @@ export type VehicleRow = {
 };
 
 // Ingresos por vehículo (suma de todo lo vendido de sus piezas) en un rango de fechas opcional.
-export async function getVehicleProfitability(range?: { from?: Date; to?: Date }) {
+export async function getVehicleProfitability(business: Business, range?: { from?: Date; to?: Date }) {
   const dateFilter =
     range?.from || range?.to ? { saleDate: { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } } : {};
 
   const [vehicles, items, expenses] = await Promise.all([
-    prisma.sourceVehicle.findMany({ orderBy: [{ brand: "asc" }, { model: "asc" }] }),
+    prisma.sourceVehicle.findMany({ where: { business }, orderBy: [{ brand: "asc" }, { model: "asc" }] }),
     prisma.saleItem.findMany({
-      where: { sale: dateFilter },
+      where: { sale: { business, ...dateFilter } },
       select: { priceSold: true, part: { select: { sourceVehicleId: true } } },
     }),
-    prisma.expense.groupBy({ by: ["sourceVehicleId"], _sum: { amount: true } }),
+    prisma.expense.groupBy({ by: ["sourceVehicleId"], _sum: { amount: true }, where: { business } }),
   ]);
 
   const expenseByVehicle = new Map(expenses.map((e) => [e.sourceVehicleId, Number(e._sum.amount ?? 0)]));
@@ -155,12 +157,12 @@ export type EmployeeRow = {
 
 // Cuánto vendió cada empleado (por venta, no por pieza) en un rango de fechas opcional, con su
 // comisión del 10%. Las ventas sin empleado asignado se agrupan aparte.
-export async function getEmployeeSales(range?: { from?: Date; to?: Date }) {
+export async function getEmployeeSales(business: Business, range?: { from?: Date; to?: Date }) {
   const dateFilter =
     range?.from || range?.to ? { ...(range.from ? { gte: range.from } : {}), ...(range.to ? { lt: range.to } : {}) } : undefined;
 
   const sales = await prisma.sale.findMany({
-    where: dateFilter ? { saleDate: dateFilter } : {},
+    where: dateFilter ? { business, saleDate: dateFilter } : { business },
     select: { totalAmount: true, employee: { select: { id: true, name: true } } },
   });
 

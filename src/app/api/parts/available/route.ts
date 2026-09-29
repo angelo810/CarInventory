@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 
 // Piezas disponibles agrupadas por (tipo de pieza, vehículo) para el formulario de ventas.
 export async function GET(req: NextRequest) {
@@ -18,9 +19,11 @@ export async function GET(req: NextRequest) {
   }
 
   const tokens = q.split(/\s+/).filter(Boolean);
+  const business = await getActiveBusiness();
 
   const parts = await prisma.part.findMany({
     where: {
+      business,
       status: "AVAILABLE",
       ...(vehicleId ? { sourceVehicleId: vehicleId } : {}),
       AND: tokens.map((t) => ({

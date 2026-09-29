@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CatalogProvider } from "./assign-row";
@@ -12,12 +13,13 @@ const FLAGS = /( \((lado no especificado|revisar|asignada)\))+$/;
 type Group = { text: string; count: number; revenue: number; vehicles: Set<string>; current?: string };
 
 export default async function RevisarPage() {
+  const business = await getActiveBusiness();
   const [parts, catalog] = await Promise.all([
     prisma.part.findMany({
-      where: { status: "SOLD", notes: { startsWith: SOLD_AS } },
+      where: { business, status: "SOLD", notes: { startsWith: SOLD_AS } },
       include: { partType: true, sourceVehicle: true, saleItems: true },
     }),
-    prisma.partType.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { name: true, zone: true, catalog: true } }),
+    prisma.partType.findMany({ where: { business }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { name: true, zone: true, catalog: true } }),
   ]);
 
   const unmatched = new Map<string, Group>();

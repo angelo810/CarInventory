@@ -31,6 +31,13 @@ model User {
   quotes Quote[]
 }
 
+// ---------- Negocios (multi-empresa) ----------
+
+enum Business {
+  MONEYCARS
+  INNOMUNDO
+}
+
 // ---------- Vehiculos de origen ----------
 
 enum SourceVehicleStatus {
@@ -41,6 +48,7 @@ enum SourceVehicleStatus {
 
 model SourceVehicle {
   id            String              @id @default(cuid())
+  business      Business            @default(MONEYCARS)
   brand         String
   model         String
   year          Int
@@ -57,6 +65,7 @@ model SourceVehicle {
   parts    Part[]
   expenses Expense[]
 
+  @@index([business])
   @@index([brand, model, year])
 }
 
@@ -74,6 +83,7 @@ model Category {
 
 model PartType {
   id          String   @id @default(cuid())
+  business    Business @default(MONEYCARS)
   name        String
   categoryId  String
   description String?
@@ -88,6 +98,7 @@ model PartType {
   compatibilities PartCompatibility[]
   parts           Part[]
 
+  @@index([business])
   @@index([name])
   @@index([categoryId])
   @@index([catalog, zone])
@@ -138,6 +149,7 @@ enum PartStatus {
 
 model Part {
   id              String        @id @default(cuid())
+  business        Business      @default(MONEYCARS)
   sku             String        @unique
   partTypeId      String
   sourceVehicleId String?
@@ -156,6 +168,7 @@ model Part {
   priceHistory  PriceHistory[]
   saleItems     SaleItem[]
 
+  @@index([business])
   @@index([status])
   @@index([partTypeId])
   @@index([sourceVehicleId])
@@ -220,6 +233,7 @@ enum PaymentMethod {
 
 model Sale {
   id            String        @id @default(cuid())
+  business      Business      @default(MONEYCARS)
   customerId    String?
   employeeId    String?
   saleDate      DateTime      @default(now())
@@ -232,6 +246,7 @@ model Sale {
   employee Employee?  @relation(fields: [employeeId], references: [id])
   items    SaleItem[]
 
+  @@index([business])
   @@index([saleDate])
   @@index([customerId])
   @@index([employeeId])
@@ -263,6 +278,7 @@ enum ExpenseCategory {
 
 model Expense {
   id              String          @id @default(cuid())
+  business        Business        @default(MONEYCARS)
   category        ExpenseCategory
   description     String
   amount          Decimal         @db.Decimal(12, 2)
@@ -272,6 +288,7 @@ model Expense {
 
   sourceVehicle SourceVehicle? @relation(fields: [sourceVehicleId], references: [id])
 
+  @@index([business])
   @@index([date])
   @@index([category])
   @@index([sourceVehicleId])

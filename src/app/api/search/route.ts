@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { searchPartTypes } from "@/lib/search";
+import { getActiveBusiness } from "@/lib/business";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
   const categoryId = searchParams.get("categoryId") ?? undefined;
   const status = (searchParams.get("status") as "ALL" | null) ?? undefined;
 
+  const business = await getActiveBusiness();
   const results = await searchPartTypes({
     q,
     brand,
@@ -24,6 +26,7 @@ export async function GET(req: NextRequest) {
     year,
     categoryId,
     status: status ?? undefined,
+    business,
   });
 
   return NextResponse.json({ results });

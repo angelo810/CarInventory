@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { generateSku } from "@/lib/sku";
 import { PartCondition, PartStatus } from "@/generated/prisma/enums";
 import { assertAdmin } from "@/lib/auth-guard";
+import { getActiveBusiness } from "@/lib/business";
 
 const compatibilitySchema = z.object({
   brand: z.string().min(1),
@@ -46,6 +47,7 @@ export async function createPart(
   }
 
   const data = parsed.data;
+  const business = await getActiveBusiness();
 
   let partTypeId = data.partTypeId;
 
@@ -65,6 +67,7 @@ export async function createPart(
 
     const newType = await prisma.partType.create({
       data: {
+        business,
         name: data.newTypeName,
         categoryId: data.newTypeCategoryId,
         description: data.newTypeDescription || null,
@@ -87,6 +90,7 @@ export async function createPart(
 
   const part = await prisma.part.create({
     data: {
+      business,
       sku,
       partTypeId,
       sourceVehicleId: data.sourceVehicleId || null,
@@ -226,7 +230,7 @@ export async function renamePartType(id: string, name: string): Promise<{ error?
   if (newName === type.name) return {};
 
   const clash = await prisma.partType.findFirst({
-    where: { id: { not: id }, name: { equals: newName, mode: "insensitive" } },
+    where: { id: { not: id }, business: type.business, name: { equals: newName, mode: "insensitive" } },
   });
 
   if (clash) {
@@ -246,6 +250,37 @@ export async function renamePartType(id: string, name: string): Promise<{ error?
   }
 
   await prisma.partType.update({ where: { id }, data: { name: newName } });
+  revalidatePath("/piezas");
+  revalidatePath("/piezas/tipos");
+  revalidatePath("/piezas/nuevo");
+  revalidatePath("/vehiculos");
+  revalidatePath("/ventas");
+  revalidatePath("/ventas/revisar");
+  return {};
+}
+
+/**
+ * Quita un tipo de pieza del catálogo por completo (para estandarizar nombres duplicados,
+ * ej. "Switch" cuando ya existe "Switch encendido"). Solo se permite si nunca se usó en
+ * ninguna pieza física; si ya se usó, hay que fusionarla desde "Organizar tipos" en vez de
+ * borrarla, para no perder el historial de esas piezas.
+ */
+export async function deletePartType(id: string): Promise<{ error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  const type = await prisma.partType.findUnique({
+    where: { id },
+    select: { name: true, _count: { select: { parts: true } } },
+  });
+  if (!type) return { error: "No encontré esa pieza." };
+  if (type._count.parts > 0) {
+    return {
+      error: `"${type.name}" ya se usó en ${type._count.parts} pieza${type._count.parts === 1 ? "" : "s"}. Para unificarla, cámbiale el nombre desde "Organizar tipos" al de la pieza que quieres conservar (se fusionan solas).`,
+    };
+  }
+
+  await prisma.partType.delete({ where: { id } });
   revalidatePath("/piezas");
   revalidatePath("/piezas/tipos");
   revalidatePath("/piezas/nuevo");

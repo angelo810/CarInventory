@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getActiveBusiness } from "@/lib/business";
 import { PartForm } from "./part-form";
 
 export default async function NuevaPiezaPage({
@@ -7,16 +8,17 @@ export default async function NuevaPiezaPage({
   searchParams: Promise<{ vehicleId?: string }>;
 }) {
   const { vehicleId } = await searchParams;
+  const business = await getActiveBusiness();
 
   const [partTypes, categories, vehicles] = await Promise.all([
     prisma.partType.findMany({
-      where: { OR: [{ catalog: true }, { parts: { some: {} } }] },
+      where: { business, OR: [{ catalog: true }, { parts: { some: {} } }] },
       include: { category: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.sourceVehicle.findMany({
-      where: { status: { not: "ARCHIVED" } },
+      where: { business, status: { not: "ARCHIVED" } },
       orderBy: { purchaseDate: "desc" },
     }),
   ]);
