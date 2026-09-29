@@ -52,8 +52,8 @@ model SourceVehicle {
   brand         String
   model         String
   year          Int
-  engine        String?
-  vin           String?             @unique
+  color         String?
+  plate         String?             @unique
   purchaseDate  DateTime
   purchaseCost  Decimal             @db.Decimal(12, 2)
   condition     String?

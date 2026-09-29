@@ -52,7 +52,7 @@ export default async function VehiculosPage() {
                     <Link href={`/vehiculos/${v.id}`} className="font-medium hover:underline">
                       {v.brand} {v.model}
                     </Link>
-                    {v.vin && <div className="text-xs text-muted-foreground">VIN: {v.vin}</div>}
+                    {v.plate && <div className="text-xs text-muted-foreground">Placa: {v.plate}</div>}
                   </TableCell>
                   <TableCell>{v.year}</TableCell>
                   <TableCell>{formatDate(v.purchaseDate)}</TableCell>

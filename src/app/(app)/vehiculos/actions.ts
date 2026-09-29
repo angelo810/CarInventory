@@ -13,8 +13,8 @@ const vehicleSchema = z.object({
   brand: z.string().min(1, "Marca requerida"),
   model: z.string().min(1, "Modelo requerido"),
   year: z.coerce.number().int().min(1950).max(new Date().getFullYear() + 1),
-  engine: z.string().optional(),
-  vin: z.string().optional(),
+  color: z.string().optional(),
+  plate: z.string().optional(),
   purchaseDate: z.string().min(1, "Fecha requerida"),
   purchaseCost: z.coerce.number().min(0),
   condition: z.string().optional(),
@@ -80,8 +80,8 @@ export async function createVehicle(
             brand: data.brand,
             model: data.model,
             year: data.year,
-            engine: data.engine || null,
-            vin: data.vin || null,
+            color: data.color || null,
+            plate: data.plate || null,
             purchaseDate: new Date(`${data.purchaseDate}T12:00:00`),
             purchaseCost: data.purchaseCost,
             condition: data.condition || null,
@@ -145,7 +145,7 @@ export async function createVehicle(
       { timeout: 60000, maxWait: 15000 },
     );
   } catch {
-    return { error: "No se pudo crear el vehículo (verifica que el VIN no esté repetido)." };
+    return { error: "No se pudo crear el vehículo (verifica que la placa no esté repetida)." };
   }
 
   revalidatePath("/vehiculos");

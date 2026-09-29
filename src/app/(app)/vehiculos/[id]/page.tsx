@@ -79,7 +79,8 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
           </h1>
           <p className="text-sm text-muted-foreground">
             Comprado el {formatDate(vehicle.purchaseDate)}
-            {vehicle.vin && ` · VIN: ${vehicle.vin}`}
+            {vehicle.plate && ` · Placa: ${vehicle.plate}`}
+            {vehicle.color && ` · Color: ${vehicle.color}`}
           </p>
         </div>
         <StatusSelect vehicleId={vehicle.id} status={vehicle.status} />

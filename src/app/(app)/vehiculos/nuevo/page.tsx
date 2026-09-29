@@ -4,11 +4,17 @@ import { VehicleForm } from "../vehicle-form";
 
 export default async function NuevoVehiculoPage() {
   const business = await getActiveBusiness();
-  const catalog = await prisma.partType.findMany({
-    where: { business, catalog: true, zone: { not: null } },
-    orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
-    select: { id: true, name: true, zone: true, kept: true },
-  });
+  const [catalog, existingVehicles] = await Promise.all([
+    prisma.partType.findMany({
+      where: { business, catalog: true, zone: { not: null } },
+      orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
+      select: { id: true, name: true, zone: true, kept: true },
+    }),
+    prisma.sourceVehicle.findMany({
+      where: { business },
+      select: { brand: true, model: true },
+    }),
+  ]);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -25,6 +31,7 @@ export default async function NuevoVehiculoPage() {
           zone: c.zone as "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE",
           kept: c.kept,
         }))}
+        existingVehicles={existingVehicles}
       />
     </div>
   );
