@@ -119,11 +119,11 @@ export default async function FinanzasPage({
             </select>
             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               Desde
-              <Input type="date" name="from" defaultValue={from ?? ""} className="h-8 w-40" />
+              <Input key={from ?? ""} type="date" name="from" defaultValue={from ?? ""} className="h-8 w-40" />
             </label>
             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               Hasta
-              <Input type="date" name="to" defaultValue={to ?? ""} className="h-8 w-40" />
+              <Input key={to ?? ""} type="date" name="to" defaultValue={to ?? ""} className="h-8 w-40" />
             </label>
             <Button type="submit">Filtrar</Button>
             {filtersOn && (
