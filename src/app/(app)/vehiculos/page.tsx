@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { sourceVehicleStatusLabels } from "@/lib/labels";
-import { Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
+import { DeleteVehicleButton } from "./delete-vehicle-button";
 
 export default async function VehiculosPage() {
   const business = await getActiveBusiness();
@@ -43,6 +44,7 @@ export default async function VehiculosPage() {
                 <TableHead>Costo</TableHead>
                 <TableHead>Piezas</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead className="w-24"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -61,11 +63,27 @@ export default async function VehiculosPage() {
                   <TableCell>
                     <Badge variant="outline">{sourceVehicleStatusLabels[v.status]}</Badge>
                   </TableCell>
+                  <TableCell className="w-24 whitespace-nowrap">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      title="Editar vehículo"
+                      render={<Link href={`/vehiculos/${v.id}/editar`} />}
+                      nativeButton={false}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <DeleteVehicleButton
+                      vehicleId={v.id}
+                      name={`${v.brand} ${v.model}${v.year ? ` (${v.year})` : ""}`}
+                      partCount={v._count.parts}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
               {vehicles.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                     No hay vehículos registrados todavía.
                   </TableCell>
                 </TableRow>

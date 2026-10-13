@@ -161,6 +161,105 @@ export async function updateVehicleStatus(id: string, status: "IN_PROGRESS" | "D
   revalidatePath("/vehiculos");
 }
 
+const vehicleEditSchema = vehicleSchema.omit({ checklist: true, extras: true });
+
+export async function updateVehicle(
+  vehicleId: string,
+  _prevState: VehicleFormState | undefined,
+  formData: FormData,
+): Promise<VehicleFormState> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  const parsed = vehicleEditSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors };
+  const data = parsed.data;
+
+  const purchaseDate = new Date(`${data.purchaseDate}T12:00:00`);
+  if (Number.isNaN(purchaseDate.getTime())) return { fieldErrors: { purchaseDate: ["Fecha inválida"] } };
+
+  const current = await prisma.sourceVehicle.findUnique({ where: { id: vehicleId }, select: { id: true } });
+  if (!current) return { error: "El vehículo ya no existe." };
+
+  try {
+    await prisma.sourceVehicle.update({
+      where: { id: vehicleId },
+      data: {
+        brand: data.brand.trim(),
+        model: data.model.trim(),
+        year: data.year,
+        color: data.color?.trim() || null,
+        plate: data.plate?.trim() || null,
+        purchaseDate,
+        purchaseCost: data.purchaseCost,
+        condition: data.condition?.trim() || null,
+        notes: data.notes?.trim() || null,
+      },
+    });
+  } catch {
+    return { error: "No se pudo guardar (verifica que la placa no esté repetida en otro vehículo)." };
+  }
+
+  revalidatePath("/vehiculos");
+  revalidatePath(`/vehiculos/${vehicleId}`);
+  revalidatePath("/finanzas");
+  revalidatePath("/ventas");
+  redirect(`/vehiculos/${vehicleId}`);
+}
+
+/**
+ * Elimina un vehículo (ej. uno registrado por error). Si alguna de sus piezas ya se vendió no se
+ * permite, porque se perdería esa venta; en ese caso se archiva. Sus piezas sin vender se borran
+ * y los gastos asociados se conservan como gastos generales (sin vehículo).
+ */
+export async function deleteVehicle(id: string): Promise<{ error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  const vehicle = await prisma.sourceVehicle.findUnique({
+    where: { id },
+    select: {
+      brand: true,
+      model: true,
+      parts: { select: { id: true, partTypeId: true, _count: { select: { saleItems: true } } } },
+    },
+  });
+  if (!vehicle) return { error: "El vehículo ya no existe." };
+
+  const sold = vehicle.parts.filter((p) => p._count.saleItems > 0).length;
+  if (sold > 0) {
+    return {
+      error: `${vehicle.brand} ${vehicle.model} tiene ${sold} pieza${sold === 1 ? "" : "s"} vendida${sold === 1 ? "" : "s"}; borrarlo haría perder esas ventas. Cámbiale el estado a "Archivado" desde su página para dejar de usarlo.`,
+    };
+  }
+
+  const partIds = vehicle.parts.map((p) => p.id);
+  const typeIds = [...new Set(vehicle.parts.map((p) => p.partTypeId))];
+
+  try {
+    await prisma.$transaction(
+      async (tx) => {
+        await tx.expense.updateMany({ where: { sourceVehicleId: id }, data: { sourceVehicleId: null } });
+        await tx.part.deleteMany({ where: { id: { in: partIds } } });
+        // Tipos de texto libre que se quedaron sin piezas
+        await tx.partType.deleteMany({ where: { id: { in: typeIds }, catalog: false, parts: { none: {} } } });
+        await tx.sourceVehicle.delete({ where: { id } });
+      },
+      { timeout: 60000, maxWait: 15000 },
+    );
+  } catch {
+    return { error: "No se pudo eliminar el vehículo." };
+  }
+
+  revalidatePath("/vehiculos");
+  revalidatePath("/piezas");
+  revalidatePath("/buscar");
+  revalidatePath("/finanzas");
+  revalidatePath("/ventas");
+  revalidatePath("/");
+  return {};
+}
+
 const inventoryChangeSchema = z.object({
   partTypeId: z.string(),
   qty: z.coerce.number().int().min(0).max(200),

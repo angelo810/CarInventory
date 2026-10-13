@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pencil } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -83,7 +86,13 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
             {vehicle.color && ` · Color: ${vehicle.color}`}
           </p>
         </div>
-        <StatusSelect vehicleId={vehicle.id} status={vehicle.status} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" render={<Link href={`/vehiculos/${vehicle.id}/editar`} />} nativeButton={false}>
+            <Pencil className="size-4" />
+            Editar
+          </Button>
+          <StatusSelect vehicleId={vehicle.id} status={vehicle.status} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
