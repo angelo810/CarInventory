@@ -39,6 +39,9 @@ const ZONES: { value: Zone; label: string }[] = [
 const selectClass =
   "h-8 rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
+// Orden alfabético en español, sin distinguir tildes ni mayúsculas.
+const nameCollator = new Intl.Collator("es", { sensitivity: "base", numeric: true });
+
 // "Optra 5" -> { base: "Optra", num: 5 }. Si el modelo no termina en número, no es parte de una serie.
 function parseModelSeries(model: string): { base: string; num: number } | null {
   const m = model.trim().match(/^(.*?)\s+(\d+)$/);
@@ -92,6 +95,7 @@ export function VehicleForm({
     return catalog
       .filter((c) => c.id !== mergeTarget.id && !deletedIds.has(c.id))
       .filter((c) => !q || c.name.toLowerCase().includes(q))
+      .sort((a, b) => nameCollator.compare(a.name, b.name))
       .slice(0, 30);
   }, [catalog, deletedIds, mergeTarget, mergeQuery]);
 
@@ -145,9 +149,11 @@ export function VehicleForm({
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return byZone[zone].filter(
-      (i) => (zone !== "EXTERIOR" || showAllExterior || i.kept || (qty[i.id] ?? 0) > 0) && (!q || i.name.toLowerCase().includes(q)),
-    );
+    return byZone[zone]
+      .filter(
+        (i) => (zone !== "EXTERIOR" || showAllExterior || i.kept || (qty[i.id] ?? 0) > 0) && (!q || i.name.toLowerCase().includes(q)),
+      )
+      .sort((a, b) => nameCollator.compare(a.name, b.name));
   }, [byZone, zone, search, showAllExterior, qty]);
 
   const hiddenExteriorCount = byZone.EXTERIOR.filter((i) => !i.kept).length;

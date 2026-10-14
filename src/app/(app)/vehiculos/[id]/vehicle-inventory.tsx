@@ -56,6 +56,9 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "missing", label: "No las trae" },
 ];
 
+// Orden alfabético en español, sin distinguir tildes ni mayúsculas.
+const nameCollator = new Intl.Collator("es", { sensitivity: "base", numeric: true });
+
 const selectClass =
   "h-8 rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
@@ -103,6 +106,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
     return activeRows
       .filter((r) => r.partTypeId !== mergeTarget.partTypeId)
       .filter((r) => !q || r.name.toLowerCase().includes(q))
+      .sort((a, b) => nameCollator.compare(a.name, b.name))
       .slice(0, 30);
   }, [activeRows, mergeTarget, mergeQuery]);
 
@@ -139,16 +143,18 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return activeRows.filter((r) => {
-      if (!groupBySold && r.zone !== zone) return false;
-      const e = edits[r.partTypeId];
-      if (!groupBySold && zone === "EXTERIOR" && !showAllExterior && !r.kept && e.qty === 0 && r.sold === 0) return false;
-      if (q && !r.name.toLowerCase().includes(q)) return false;
-      if (filter === "available") return e.qty > 0;
-      if (filter === "sold") return r.sold > 0;
-      if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0;
-      return true;
-    });
+    return activeRows
+      .filter((r) => {
+        if (!groupBySold && r.zone !== zone) return false;
+        const e = edits[r.partTypeId];
+        if (!groupBySold && zone === "EXTERIOR" && !showAllExterior && !r.kept && e.qty === 0 && r.sold === 0) return false;
+        if (q && !r.name.toLowerCase().includes(q)) return false;
+        if (filter === "available") return e.qty > 0;
+        if (filter === "sold") return r.sold > 0;
+        if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0;
+        return true;
+      })
+      .sort((a, b) => nameCollator.compare(a.name, b.name));
   }, [activeRows, edits, zone, search, filter, showAllExterior, groupBySold]);
 
   const zoneCounts = useMemo(() => {
