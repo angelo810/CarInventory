@@ -13,6 +13,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { partConditionLabels, partStatusLabels } from "@/lib/labels";
 import { PartCondition, PartStatus } from "@/generated/prisma/enums";
 import { PartTypePicker, type PartTypeOption } from "@/components/part-type-picker";
+import { ZONE_OPTIONS, zoneFromCategory } from "@/lib/zone";
 
 type Category = { id: string; name: string };
 type VehicleOption = { id: string; brand: string; model: string; year: number };
@@ -33,6 +34,7 @@ export function PartForm({
   const [state, formAction, isPending] = useActionState(createPart, undefined);
   const [mode, setMode] = useState<"existing" | "new">(partTypes.length ? "existing" : "new");
   const [partTypeId, setPartTypeId] = useState("");
+  const [newZone, setNewZone] = useState("");
   const [compatRows, setCompatRows] = useState<CompatRow[]>([
     { brand: "", model: "", yearFrom: "", yearTo: "" },
   ]);
@@ -80,6 +82,10 @@ export function PartForm({
                   <Select
                     name="newTypeCategoryId"
                     items={Object.fromEntries(categories.map((c) => [c.id, c.name]))}
+                    onValueChange={(id) => {
+                      const guess = zoneFromCategory(categories.find((c) => c.id === id)?.name);
+                      if (guess) setNewZone(guess);
+                    }}
                   >
                     <SelectTrigger className="w-full" id="newTypeCategoryId">
                       <SelectValue placeholder="Selecciona categoría…" />
@@ -93,6 +99,29 @@ export function PartForm({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="newTypeZone">Zona en la lista de piezas del vehículo</Label>
+                <Select
+                  name="newTypeZone"
+                  value={newZone}
+                  onValueChange={(v) => setNewZone(v ?? "")}
+                  items={Object.fromEntries(ZONE_OPTIONS.map((z) => [z.value, z.label]))}
+                >
+                  <SelectTrigger className="w-full sm:w-64" id="newTypeZone">
+                    <SelectValue placeholder="Selecciona zona…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ZONE_OPTIONS.map((z) => (
+                      <SelectItem key={z.value} value={z.value}>
+                        {z.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Así la pieza aparece al registrar un vehículo y se puede fusionar con otras.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newTypeDescription">Descripción (opcional)</Label>

@@ -8,6 +8,7 @@ import { generateSku } from "@/lib/sku";
 import { PartCondition, PartStatus } from "@/generated/prisma/enums";
 import { assertAdmin } from "@/lib/auth-guard";
 import { getActiveBusiness } from "@/lib/business";
+import { isZone, zoneFromCategory } from "@/lib/zone";
 
 const compatibilitySchema = z.object({
   brand: z.string().min(1),
@@ -21,6 +22,7 @@ const partSchema = z.object({
   newTypeName: z.string().optional(),
   newTypeCategoryId: z.string().optional(),
   newTypeDescription: z.string().optional(),
+  newTypeZone: z.string().optional(),
   compatibilities: z.string().optional(), // JSON string
   sourceVehicleId: z.string().optional(),
   condition: z.nativeEnum(PartCondition),
@@ -65,11 +67,17 @@ export async function createPart(
       }
     }
 
+    // Un tipo nuevo entra al catálogo (lista de piezas al registrar un vehículo y opción de fusionar)
+    // en la zona elegida; si no eligió, se sugiere según la categoría.
+    const category = await prisma.category.findUnique({ where: { id: data.newTypeCategoryId } });
+    const zone = isZone(data.newTypeZone) ? data.newTypeZone : zoneFromCategory(category?.name);
+
     const newType = await prisma.partType.create({
       data: {
         business,
         name: data.newTypeName,
         categoryId: data.newTypeCategoryId,
+        ...(zone ? { zone, catalog: true } : {}),
         description: data.newTypeDescription || null,
         compatibilities: { create: compatibilities },
       },
@@ -105,6 +113,8 @@ export async function createPart(
 
   revalidatePath("/piezas");
   revalidatePath("/buscar");
+  revalidatePath("/vehiculos");
+  revalidatePath("/vehiculos/nuevo");
   if (data.sourceVehicleId) revalidatePath(`/vehiculos/${data.sourceVehicleId}`);
   redirect(`/piezas/${part.id}`);
 }
