@@ -44,12 +44,22 @@ function parseDay(value?: string, endOfDay = false) {
 export default async function FinanzasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ vehicleId?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ vehicleId?: string; from?: string; to?: string; year?: string }>;
 }) {
-  const { vehicleId, from, to } = await searchParams;
+  const { vehicleId, from, to, year } = await searchParams;
   const period = currentMonthPeriod();
-  const range = { from: parseDay(from), to: parseDay(to, true) };
+  const yearNum = year && /^\d{4}$/.test(year) ? Number(year) : undefined;
+  // Con un año elegido, el rango es todo ese año; Desde/Hasta (si se llenan) lo acotan.
+  const range = {
+    from: parseDay(from) ?? (yearNum ? new Date(yearNum, 0, 1) : undefined),
+    to: parseDay(to, true) ?? (yearNum ? new Date(yearNum + 1, 0, 1) : undefined),
+  };
   const business = await getActiveBusiness();
+
+  const salesBounds = await prisma.sale.aggregate({ where: { business }, _min: { saleDate: true }, _max: { saleDate: true } });
+  const firstYear = salesBounds._min.saleDate?.getFullYear();
+  const lastYear = Math.max(salesBounds._max.saleDate?.getFullYear() ?? 0, new Date().getFullYear());
+  const years = firstYear ? Array.from({ length: lastYear - firstYear + 1 }, (_, i) => lastYear - i) : [];
 
   const [summary, monthlySales, topParts, expenses, vehicles, profitability, vehicleSales, employeeSales] = await Promise.all([
     getFinancialSummary(period, business),
@@ -79,7 +89,8 @@ export default async function FinanzasPage({
     byZone.set(key, z);
   }
 
-  const filtersOn = Boolean(vehicleId || from || to);
+  const filtersOn = Boolean(vehicleId || from || to || yearNum);
+  const rangeQuery = `${yearNum ? `&year=${yearNum}` : ""}${from ? `&from=${from}` : ""}${to ? `&to=${to}` : ""}`;
 
   return (
     <div className="space-y-6">
@@ -117,6 +128,17 @@ export default async function FinanzasPage({
                 </option>
               ))}
             </select>
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              Año
+              <select name="year" defaultValue={yearNum ? String(yearNum) : ""} className={selectClass}>
+                <option value="">Todos los años</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               Desde
               <Input key={from ?? ""} type="date" name="from" defaultValue={from ?? ""} className="h-8 w-40" />
@@ -165,7 +187,7 @@ export default async function FinanzasPage({
                 {shownRows.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>
-                      <Link href={`/finanzas?vehicleId=${r.id}${from ? `&from=${from}` : ""}${to ? `&to=${to}` : ""}`} className="hover:underline">
+                      <Link href={`/finanzas?vehicleId=${r.id}${rangeQuery}`} className="hover:underline">
                         {r.name}
                       </Link>
                     </TableCell>
@@ -246,8 +268,8 @@ export default async function FinanzasPage({
         <CardHeader>
           <CardTitle className="text-base">Ventas y comisión por empleado</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Cuánto vendió cada empleado y su comisión del {COMMISSION_RATE * 100}%. Usa el mismo rango de fechas del
-            filtro de arriba (Desde/Hasta).
+            Cuánto vendió cada empleado y su comisión del {COMMISSION_RATE * 100}%. Usa el mismo rango del filtro de
+            arriba (Año o Desde/Hasta).
           </p>
         </CardHeader>
         <CardContent className="p-0">
