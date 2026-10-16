@@ -90,6 +90,7 @@ model PartType {
   zone        PartZone?
   catalog     Boolean  @default(false) // aparece en la lista de piezas al registrar un vehiculo
   kept        Boolean  @default(true) // false = normalmente no se guarda (externas marcadas NO)
+  imageUrl    String? // foto de referencia de la pieza (archivo en Vercel Blob, aquí solo el enlace)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

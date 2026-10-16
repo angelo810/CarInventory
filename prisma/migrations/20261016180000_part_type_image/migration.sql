@@ -1,0 +1,1 @@
+ALTER TABLE "PartType" ADD COLUMN "imageUrl" TEXT;

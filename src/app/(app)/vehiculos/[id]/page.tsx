@@ -9,8 +9,15 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { StatusSelect } from "./status-select";
 import { VehicleInventory, type InventoryRow } from "./vehicle-inventory";
 
-export default async function VehiculoDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function VehiculoDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ nuevo?: string }>;
+}) {
   const { id } = await params;
+  const { nuevo } = await searchParams;
 
   const vehicle = await prisma.sourceVehicle.findUnique({
     where: { id },
@@ -45,6 +52,7 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
       name: t.name,
       zone: t.zone as InventoryRow["zone"],
       kept: t.kept,
+      imageUrl: t.imageUrl,
       available: 0,
       sold: 0,
       other: 0,
@@ -59,6 +67,7 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
         name: p.partType.name,
         zone: (p.partType.zone as InventoryRow["zone"]) ?? "OTHER",
         kept: true,
+        imageUrl: p.partType.imageUrl,
         available: 0,
         sold: 0,
         other: 0,
@@ -107,7 +116,15 @@ export default async function VehiculoDetailPage({ params }: { params: Promise<{
         <Kpi label="Vendidas" value={`${soldCount} / ${vehicle.parts.length}`} />
       </div>
 
+      {nuevo && (
+        <div className="rounded-lg border border-emerald-600/40 bg-emerald-50 px-4 py-3 text-sm dark:bg-emerald-950/30">
+          <b>Vehículo guardado.</b> Paso 2: en &quot;Inventario de piezas&quot; (abajo) toca cada pieza que trae el auto,
+          confirma que es esa y la cantidad. Las que ya asignas salen de la lista &quot;Por asignar&quot;.
+        </div>
+      )}
+
       <VehicleInventory
+        vehicleName={`${vehicle.brand} ${vehicle.model}`}
         key={[...rows.values()].map((r) => `${r.partTypeId}:${r.available}:${r.sold}:${r.price}`).join("|")}
         vehicleId={vehicle.id}
         rows={[...rows.values()]}

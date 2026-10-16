@@ -4,35 +4,20 @@ import { VehicleForm } from "../vehicle-form";
 
 export default async function NuevoVehiculoPage() {
   const business = await getActiveBusiness();
-  const [catalog, existingVehicles] = await Promise.all([
-    prisma.partType.findMany({
-      where: { business, catalog: true, zone: { not: null } },
-      orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
-      select: { id: true, name: true, zone: true, kept: true },
-    }),
-    prisma.sourceVehicle.findMany({
-      where: { business },
-      select: { brand: true, model: true },
-    }),
-  ]);
+  const existingVehicles = await prisma.sourceVehicle.findMany({
+    where: { business },
+    select: { brand: true, model: true },
+  });
 
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Nuevo vehículo</h1>
         <p className="text-sm text-muted-foreground">
-          Registra el vehículo y marca qué piezas trae, cuántas de cada una. Se crean solas en el inventario.
+          Paso 1: registra los datos del vehículo. Al guardar, en el paso 2 le asignas las piezas que trae.
         </p>
       </div>
-      <VehicleForm
-        catalog={catalog.map((c) => ({
-          id: c.id,
-          name: c.name,
-          zone: c.zone as "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE",
-          kept: c.kept,
-        }))}
-        existingVehicles={existingVehicles}
-      />
+      <VehicleForm existingVehicles={existingVehicles} />
     </div>
   );
 }

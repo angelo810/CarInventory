@@ -2,10 +2,10 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Combine, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { Camera, Check, Combine, ImageOff, Minus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { saveVehicleInventory } from "../actions";
-import { deletePartType, renamePartType } from "@/app/(app)/piezas/actions";
+import { deletePartType, renamePartType, uploadPartTypeImage } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { RenamePartDialog } from "@/components/rename-part-dialog";
+import { compressImage } from "@/lib/compress-image";
+import { partImageSrc } from "@/lib/part-image";
+import { AddPartTypesDialog } from "@/components/add-part-types-dialog";
 
 type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE" | "OTHER";
 
@@ -30,6 +34,7 @@ export type InventoryRow = {
   name: string;
   zone: Zone;
   kept: boolean;
+  imageUrl: string | null;
   available: number;
   sold: number;
   other: number;
@@ -38,6 +43,7 @@ export type InventoryRow = {
 
 type Extra = { key: number; name: string; zone: Exclude<Zone, "OTHER">; qty: string; price: string };
 type Filter = "all" | "available" | "sold" | "missing";
+type ConfirmStep = "photo" | "qty";
 
 const ZONES: { value: Zone; label: string }[] = [
   { value: "INTERIOR", label: "Interior" },
@@ -50,10 +56,10 @@ const ZONES: { value: Zone; label: string }[] = [
 ];
 
 const FILTERS: { value: Filter; label: string }[] = [
-  { value: "all", label: "Todas" },
+  { value: "missing", label: "Por asignar" },
   { value: "available", label: "Disponibles" },
   { value: "sold", label: "Vendidas" },
-  { value: "missing", label: "No las trae" },
+  { value: "all", label: "Todas" },
 ];
 
 // Orden alfabético en español, sin distinguir tildes ni mayúsculas.
@@ -62,7 +68,15 @@ const nameCollator = new Intl.Collator("es", { sensitivity: "base", numeric: tru
 const selectClass =
   "h-8 rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows: InventoryRow[] }) {
+export function VehicleInventory({
+  vehicleId,
+  vehicleName,
+  rows,
+}: {
+  vehicleId: string;
+  vehicleName: string;
+  rows: InventoryRow[];
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -70,7 +84,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
     Object.fromEntries(rows.map((r) => [r.partTypeId, { qty: r.available, price: r.price ? String(r.price) : "" }])),
   );
   const [zone, setZone] = useState<Zone>("INTERIOR");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("missing");
   const [search, setSearch] = useState("");
   const [showAllExterior, setShowAllExterior] = useState(true);
   const [extras, setExtras] = useState<Extra[]>([]);
@@ -81,8 +95,31 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
   const [mergeTarget, setMergeTarget] = useState<InventoryRow | null>(null);
   const [mergeQuery, setMergeQuery] = useState("");
   const [isMerging, startMerge] = useTransition();
+  const [renameTarget, setRenameTarget] = useState<InventoryRow | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<InventoryRow | null>(null);
+  const [confirmQty, setConfirmQty] = useState(1);
+  const [confirmStep, setConfirmStep] = useState<ConfirmStep>("photo");
+  const [images, setImages] = useState<Record<string, string>>({});
+  const [isUploading, startUpload] = useTransition();
+  const [renames, setRenames] = useState<Record<string, string>>({});
+  const [addOpen, setAddOpen] = useState(false);
+  const [addedRows, setAddedRows] = useState<InventoryRow[]>([]);
+  const allRows = useMemo(
+    () => [...rows, ...addedRows.filter((a) => !rows.some((r) => r.partTypeId === a.partTypeId))],
+    [rows, addedRows],
+  );
 
-  const activeRows = useMemo(() => rows.filter((r) => !deletedIds.has(r.partTypeId)), [rows, deletedIds]);
+  const activeRows = useMemo(
+    () =>
+      allRows
+        .filter((r) => !deletedIds.has(r.partTypeId))
+        .map((r) => ({
+          ...r,
+          name: renames[r.partTypeId] ?? r.name,
+          imageUrl: images[r.partTypeId] ?? r.imageUrl,
+        })),
+    [allRows, deletedIds, renames, images],
+  );
 
   function confirmDelete() {
     if (!deleteTarget) return;
@@ -128,11 +165,11 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
 
   const dirty = useMemo(
     () =>
-      rows.filter((r) => {
+      allRows.filter((r) => {
         const e = edits[r.partTypeId];
         return e.qty !== r.available || (e.qty > 0 && Number(e.price || 0) !== r.price);
       }),
-    [rows, edits],
+    [allRows, edits],
   );
   const validExtras = extras.filter((e) => e.name.trim());
   const pendingChanges = dirty.length + validExtras.length;
@@ -173,6 +210,26 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
 
   const hiddenExterior = activeRows.filter((r) => r.zone === "EXTERIOR" && !r.kept).length;
 
+  function uploadPhoto(partTypeId: string, file: File | undefined) {
+    if (!file) return;
+    startUpload(async () => {
+      try {
+        const small = await compressImage(file);
+        const fd = new FormData();
+        fd.append("file", small);
+        const result = await uploadPartTypeImage(partTypeId, fd);
+        if (result.error || !result.url) {
+          toast.error(result.error ?? "No se pudo subir la foto.");
+          return;
+        }
+        setImages((prev) => ({ ...prev, [partTypeId]: result.url! }));
+        toast.success("Foto guardada.");
+      } catch {
+        toast.error("No se pudo procesar la foto.");
+      }
+    });
+  }
+
   function setQty(id: string, value: number) {
     const qty = Math.max(0, Math.min(200, Math.floor(value) || 0));
     setEdits((prev) => ({ ...prev, [id]: { ...prev[id], qty } }));
@@ -182,13 +239,18 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
     setEdits((prev) => ({ ...prev, [id]: { ...prev[id], price } }));
   }
 
-  function save() {
+  function save(also?: { partTypeId: string; qty: number }) {
     const payload = JSON.stringify({
-      changes: dirty.map((r) => ({
-        partTypeId: r.partTypeId,
-        qty: edits[r.partTypeId].qty,
-        price: Number(edits[r.partTypeId].price || 0),
-      })),
+      changes: [
+        ...dirty
+          .filter((r) => r.partTypeId !== also?.partTypeId)
+          .map((r) => ({
+            partTypeId: r.partTypeId,
+            qty: edits[r.partTypeId].qty,
+            price: Number(edits[r.partTypeId].price || 0),
+          })),
+        ...(also ? [{ partTypeId: also.partTypeId, qty: also.qty, price: Number(edits[also.partTypeId]?.price || 0) }] : []),
+      ],
       extras: validExtras.map((e) => ({
         name: e.name,
         zone: e.zone,
@@ -205,6 +267,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
       }
       toast.success(`Guardado: ${result.created ?? 0} agregadas, ${result.removed ?? 0} quitadas`);
       setExtras([]);
+      setConfirmTarget(null);
       router.refresh();
     });
   }
@@ -242,6 +305,10 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
               className="pl-8"
             />
           </div>
+          <Button type="button" size="sm" variant="outline" onClick={() => setAddOpen(true)}>
+            <Plus className="size-4" />
+            Añadir pieza
+          </Button>
           {FILTERS.map((f) => (
             <Button
               key={f.value}
@@ -272,7 +339,15 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
               >
                 <button
                   type="button"
-                  onClick={() => setQty(r.partTypeId, has ? 0 : 1)}
+                  onClick={() => {
+                    if (has) {
+                      setQty(r.partTypeId, 0);
+                    } else {
+                      setConfirmQty(1);
+                      setConfirmStep("photo");
+                      setConfirmTarget(r);
+                    }
+                  }}
                   className="flex flex-1 min-w-48 items-center gap-2 text-left"
                 >
                   <span
@@ -285,6 +360,15 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
                   </span>
                   <span className={cn(!has && r.sold === 0 && "text-muted-foreground")}>{r.name}</span>
                 </button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  title="Cambiar el nombre de esta pieza"
+                  onClick={() => setRenameTarget(r)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
                 {r.sold > 0 && <Badge variant="destructive">{r.sold} vendida{r.sold > 1 ? "s" : ""}</Badge>}
                 {r.other > 0 && <Badge variant="secondary">{r.other} reservada{r.other > 1 ? "s" : ""}</Badge>}
                 {!has && r.sold === 0 && r.other === 0 && (
@@ -435,7 +519,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
                 onClick={() => {
                   setEdits(
                     Object.fromEntries(
-                      rows.map((r) => [r.partTypeId, { qty: r.available, price: r.price ? String(r.price) : "" }]),
+                      allRows.map((r) => [r.partTypeId, { qty: r.available, price: r.price ? String(r.price) : "" }]),
                     ),
                   );
                   setExtras([]);
@@ -443,7 +527,7 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
               >
                 Descartar
               </Button>
-              <Button type="button" disabled={isPending} onClick={save}>
+              <Button type="button" disabled={isPending} onClick={() => save()}>
                 {isPending ? "Guardando…" : "Guardar cambios"}
               </Button>
             </div>
@@ -506,6 +590,119 @@ export function VehicleInventory({ vehicleId, rows }: { vehicleId: string; rows:
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog open={!!confirmTarget} onOpenChange={(open) => !open && !isPending && setConfirmTarget(null)}>
+        <DialogContent>
+          {confirmTarget && confirmStep === "photo" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>¿Esta es la pieza que quieres agregar?</DialogTitle>
+                <DialogDescription>Revisa la foto para confirmar que es esa. Se agrega a {vehicleName}.</DialogDescription>
+              </DialogHeader>
+              <div className="flex h-56 items-center justify-center overflow-hidden rounded-lg border bg-muted/30">
+                {confirmTarget.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={partImageSrc(confirmTarget.partTypeId, confirmTarget.imageUrl) ?? ""} alt={confirmTarget.name} className="h-full w-full object-contain" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
+                    <ImageOff className="size-8" />
+                    Esta pieza aún no tiene foto
+                  </div>
+                )}
+              </div>
+              <p className="text-base font-medium">{confirmTarget.name}</p>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                  <Camera className="size-4" />
+                  {isUploading ? "Subiendo…" : confirmTarget.imageUrl ? "Cambiar foto" : "Subir foto"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={isUploading}
+                    onChange={(e) => {
+                      uploadPhoto(confirmTarget.partTypeId, e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setConfirmTarget(null)}>
+                    No es esta
+                  </Button>
+                  <Button type="button" onClick={() => setConfirmStep("qty")}>
+                    Sí, es esta
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+          {confirmTarget && confirmStep === "qty" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>¿Cuántas unidades trae?</DialogTitle>
+                <DialogDescription>
+                  Se guarda en {vehicleName} al aceptar (junto con cualquier otro cambio que tengas pendiente).
+                </DialogDescription>
+              </DialogHeader>
+              <p className="text-base font-medium">{confirmTarget.name}</p>
+              <label className="flex items-center gap-2 text-sm">
+                Cantidad
+                <Input
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={confirmQty}
+                  onChange={(e) => setConfirmQty(Math.max(1, Math.min(200, Math.floor(Number(e.target.value)) || 1)))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty });
+                    }
+                  }}
+                  className="w-20"
+                  autoFocus
+                />
+              </label>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" disabled={isPending} onClick={() => setConfirmStep("photo")}>
+                  Atrás
+                </Button>
+                <Button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty })}
+                >
+                  {isPending ? "Guardando…" : "Guardar"}
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      <AddPartTypesDialog
+        open={addOpen}
+        defaultZone={zone === "OTHER" ? "INTERIOR" : zone}
+        onClose={() => setAddOpen(false)}
+        onAdded={(items) => {
+          setAddedRows((prev) => [
+            ...prev,
+            ...items.map((i) => ({ partTypeId: i.id, name: i.name, zone: i.zone, kept: i.kept, imageUrl: null, available: 0, sold: 0, other: 0, price: 0 })),
+          ]);
+          setEdits((prev) => ({
+            ...prev,
+            ...Object.fromEntries(items.map((i) => [i.id, { qty: 0, price: "" }])),
+          }));
+          setSearch("");
+          setFilter("all");
+          setZone(items[0].zone);
+        }}
+      />
+      <RenamePartDialog
+        target={renameTarget ? { id: renameTarget.partTypeId, name: renameTarget.name } : null}
+        onClose={() => setRenameTarget(null)}
+        onRenamed={(id, name) => setRenames((prev) => ({ ...prev, [id]: name }))}
+        onMerged={(id) => setDeletedIds((prev) => new Set(prev).add(id))}
+      />
     </Card>
   );
 }

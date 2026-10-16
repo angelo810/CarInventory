@@ -8,7 +8,9 @@ import { generateSku } from "@/lib/sku";
 import { PartCondition, PartStatus } from "@/generated/prisma/enums";
 import { assertAdmin } from "@/lib/auth-guard";
 import { getActiveBusiness } from "@/lib/business";
-import { isZone, zoneFromCategory } from "@/lib/zone";
+import { isZone, zoneFromCategory, type PartZoneValue } from "@/lib/zone";
+import { inferCategory } from "@/lib/categorize";
+import { del, put } from "@vercel/blob";
 
 const compatibilitySchema = z.object({
   brand: z.string().min(1),
@@ -298,4 +300,116 @@ export async function deletePartType(id: string): Promise<{ error?: string }> {
   revalidatePath("/ventas");
   revalidatePath("/ventas/revisar");
   return {};
+}
+
+export type NewCatalogItem = { id: string; name: string; zone: PartZoneValue; kept: boolean };
+
+const ZONE_FALLBACK_CATEGORY: Record<PartZoneValue, string> = {
+  INTERIOR: "Interior",
+  MECHANICAL: "Motor",
+  EXTERIOR: "Carrocería",
+  DOCUMENTS: "Otro",
+  SCRAP: "Chatarra",
+  COMPLETE: "Otro",
+};
+
+/**
+ * Agrega piezas nuevas al catálogo (la lista de piezas al registrar un vehículo) en una zona.
+ * Si ya existe una pieza con ese nombre en la empresa activa no se duplica: si estaba fuera del
+ * catálogo se pasa a la zona elegida, y si ya estaba en el catálogo se informa como repetida.
+ */
+export async function addCatalogPartTypes(
+  names: string[],
+  zone: string,
+): Promise<{ error?: string; created?: NewCatalogItem[]; existing?: string[] }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+  if (!isZone(zone)) return { error: "Elige una zona." };
+
+  const clean = [...new Map(names.map((n) => n.trim().replace(/\s+/g, " ")).filter(Boolean).map((n) => [n.toLowerCase(), n])).values()];
+  if (clean.length === 0) return { error: "Escribe al menos un nombre." };
+  if (clean.length > 40) return { error: "Máximo 40 piezas por vez." };
+
+  const business = await getActiveBusiness();
+  const categories = await prisma.category.findMany();
+  const categoryId = (name: string) => {
+    const inferred = inferCategory(name);
+    const catName = inferred === "Otro" ? ZONE_FALLBACK_CATEGORY[zone] : inferred;
+    return (categories.find((c) => c.name === catName) ?? categories.find((c) => c.name === "Otro"))!.id;
+  };
+
+  // Comparación sin mayúsculas ni tildes ("Luz de salon" = "Luz de salón")
+  const key = (n: string) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  const wanted = new Set(clean.map(key));
+  const sameName = (await prisma.partType.findMany({ where: { business } })).filter((t) => wanted.has(key(t.name)));
+
+  const created: NewCatalogItem[] = [];
+  const existing: string[] = [];
+  for (const name of clean) {
+    const found = sameName.find((t) => key(t.name) === key(name));
+    if (found?.catalog && found.zone) {
+      existing.push(found.name);
+      continue;
+    }
+    const type = found
+      ? await prisma.partType.update({ where: { id: found.id }, data: { zone, catalog: true } })
+      : await prisma.partType.create({ data: { business, name, categoryId: categoryId(name), zone, catalog: true, kept: true } });
+    created.push({ id: type.id, name: type.name, zone, kept: type.kept });
+  }
+
+  revalidatePath("/piezas");
+  revalidatePath("/piezas/tipos");
+  revalidatePath("/piezas/nuevo");
+  revalidatePath("/vehiculos");
+  revalidatePath("/vehiculos/nuevo");
+  return { created, existing };
+}
+
+/**
+ * Guarda la foto de referencia de una pieza del catálogo. El archivo (ya reducido en el navegador)
+ * va a Vercel Blob y en la base solo queda el enlace.
+ */
+export async function uploadPartTypeImage(
+  partTypeId: string,
+  formData: FormData,
+): Promise<{ error?: string; url?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Elige una imagen." };
+  if (!file.type.startsWith("image/")) return { error: "El archivo debe ser una imagen." };
+  if (file.size > 900_000) return { error: "La imagen pesa demasiado (máximo ~900 KB)." };
+  const hasStorage = process.env.BLOB_READ_WRITE_TOKEN || (process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN);
+  if (!hasStorage) {
+    return { error: "Falta configurar el almacenamiento de fotos (BLOB_READ_WRITE_TOKEN en .env)." };
+  }
+
+  const type = await prisma.partType.findUnique({ where: { id: partTypeId }, select: { id: true, imageUrl: true } });
+  if (!type) return { error: "No encontré esa pieza." };
+
+  let url: string;
+  try {
+    const blob = await put(`piezas/${type.id}.webp`, file, {
+      access: "private",
+      addRandomSuffix: true,
+      contentType: file.type,
+    });
+    url = blob.url;
+  } catch {
+    return { error: "No se pudo subir la foto. Intenta de nuevo." };
+  }
+
+  await prisma.partType.update({ where: { id: type.id }, data: { imageUrl: url } });
+  if (type.imageUrl) {
+    try {
+      await del(type.imageUrl); // no dejar fotos viejas ocupando espacio
+    } catch {
+      // si no se puede borrar la anterior no es grave
+    }
+  }
+
+  revalidatePath("/vehiculos");
+  revalidatePath("/piezas/tipos");
+  return { url };
 }

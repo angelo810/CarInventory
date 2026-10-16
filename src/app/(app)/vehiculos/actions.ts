@@ -151,7 +151,7 @@ export async function createVehicle(
   revalidatePath("/vehiculos");
   revalidatePath("/piezas");
   revalidatePath("/buscar");
-  redirect(`/vehiculos/${vehicleId}`);
+  redirect(`/vehiculos/${vehicleId}?nuevo=1`);
 }
 
 export async function updateVehicleStatus(id: string, status: "IN_PROGRESS" | "DISMANTLED" | "ARCHIVED") {
