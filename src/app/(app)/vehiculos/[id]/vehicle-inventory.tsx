@@ -2,10 +2,10 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Check, Combine, ImageOff, Minus, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Check, Combine, ImageOff, Minus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { saveVehicleInventory } from "../actions";
-import { deletePartType, renamePartType, uploadPartTypeImage } from "@/app/(app)/piezas/actions";
+import { deletePartType, renamePartType } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,6 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { RenamePartDialog } from "@/components/rename-part-dialog";
-import { compressImage } from "@/lib/compress-image";
 import { partImageSrc } from "@/lib/part-image";
 import { AddPartTypesDialog } from "@/components/add-part-types-dialog";
 
@@ -99,8 +98,6 @@ export function VehicleInventory({
   const [confirmTarget, setConfirmTarget] = useState<InventoryRow | null>(null);
   const [confirmQty, setConfirmQty] = useState(1);
   const [confirmStep, setConfirmStep] = useState<ConfirmStep>("photo");
-  const [images, setImages] = useState<Record<string, string>>({});
-  const [isUploading, startUpload] = useTransition();
   const [renames, setRenames] = useState<Record<string, string>>({});
   const [addOpen, setAddOpen] = useState(false);
   const [addedRows, setAddedRows] = useState<InventoryRow[]>([]);
@@ -113,12 +110,8 @@ export function VehicleInventory({
     () =>
       allRows
         .filter((r) => !deletedIds.has(r.partTypeId))
-        .map((r) => ({
-          ...r,
-          name: renames[r.partTypeId] ?? r.name,
-          imageUrl: images[r.partTypeId] ?? r.imageUrl,
-        })),
-    [allRows, deletedIds, renames, images],
+        .map((r) => (renames[r.partTypeId] ? { ...r, name: renames[r.partTypeId] } : r)),
+    [allRows, deletedIds, renames],
   );
 
   function confirmDelete() {
@@ -209,26 +202,6 @@ export function VehicleInventory({
   }, [activeRows, edits]);
 
   const hiddenExterior = activeRows.filter((r) => r.zone === "EXTERIOR" && !r.kept).length;
-
-  function uploadPhoto(partTypeId: string, file: File | undefined) {
-    if (!file) return;
-    startUpload(async () => {
-      try {
-        const small = await compressImage(file);
-        const fd = new FormData();
-        fd.append("file", small);
-        const result = await uploadPartTypeImage(partTypeId, fd);
-        if (result.error || !result.url) {
-          toast.error(result.error ?? "No se pudo subir la foto.");
-          return;
-        }
-        setImages((prev) => ({ ...prev, [partTypeId]: result.url! }));
-        toast.success("Foto guardada.");
-      } catch {
-        toast.error("No se pudo procesar la foto.");
-      }
-    });
-  }
 
   function setQty(id: string, value: number) {
     const qty = Math.max(0, Math.min(200, Math.floor(value) || 0));
@@ -606,25 +579,12 @@ export function VehicleInventory({
                   <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
                     <ImageOff className="size-8" />
                     Esta pieza aún no tiene foto
+                    <span className="text-xs">Súbela en Piezas → Organizar tipos de pieza</span>
                   </div>
                 )}
               </div>
               <p className="text-base font-medium">{confirmTarget.name}</p>
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                  <Camera className="size-4" />
-                  {isUploading ? "Subiendo…" : confirmTarget.imageUrl ? "Cambiar foto" : "Subir foto"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
-                    disabled={isUploading}
-                    onChange={(e) => {
-                      uploadPhoto(confirmTarget.partTypeId, e.target.files?.[0]);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
                 <div className="flex gap-2">
                   <Button type="button" variant="ghost" onClick={() => setConfirmTarget(null)}>
                     No es esta

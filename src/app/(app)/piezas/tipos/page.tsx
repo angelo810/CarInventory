@@ -9,7 +9,7 @@ export default async function TiposPage() {
   const types = await prisma.partType.findMany({
     where: { business },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { id: true, name: true, zone: true, catalog: true, _count: { select: { parts: true } } },
+    select: { id: true, name: true, zone: true, catalog: true, imageUrl: true, _count: { select: { parts: true } } },
   });
 
   return (
@@ -18,8 +18,8 @@ export default async function TiposPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Organizar tipos de pieza</h1>
           <p className="text-sm text-muted-foreground">
-            Mueve las piezas de &quot;Otras&quot; a Interior, Mecánico o Exterior. Al moverlas aparecen en la lista al
-            registrar vehículos y ventas.
+            Mueve las piezas de &quot;Otras&quot; a Interior, Mecánico o Exterior, y sube la foto de cada pieza para poder
+            reconocerla al asignarla a un vehículo.
           </p>
         </div>
         <Button variant="outline" render={<Link href="/piezas" />} nativeButton={false}>
@@ -32,6 +32,7 @@ export default async function TiposPage() {
           name: t.name,
           zone: t.catalog && t.zone ? t.zone : "OTHER",
           count: t._count.parts,
+          imageUrl: t.imageUrl,
         }))}
       />
     </div>
