@@ -43,6 +43,7 @@ export type InventoryRow = {
 type Extra = { key: number; name: string; zone: Exclude<Zone, "OTHER">; qty: string; price: string };
 type Filter = "all" | "available" | "sold" | "missing";
 type ConfirmStep = "photo" | "qty";
+type Cond = "USED_GOOD" | "FOR_PARTS";
 
 const ZONES: { value: Zone; label: string }[] = [
   { value: "INTERIOR", label: "Interior" },
@@ -98,6 +99,7 @@ export function VehicleInventory({
   const [confirmTarget, setConfirmTarget] = useState<InventoryRow | null>(null);
   const [confirmQty, setConfirmQty] = useState(1);
   const [confirmStep, setConfirmStep] = useState<ConfirmStep>("photo");
+  const [confirmCond, setConfirmCond] = useState<Cond>("USED_GOOD");
   const [renames, setRenames] = useState<Record<string, string>>({});
   const [addOpen, setAddOpen] = useState(false);
   const [addedRows, setAddedRows] = useState<InventoryRow[]>([]);
@@ -187,6 +189,16 @@ export function VehicleInventory({
       .sort((a, b) => nameCollator.compare(a.name, b.name));
   }, [activeRows, edits, zone, search, filter, showAllExterior, groupBySold]);
 
+  const hiddenAssigned = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (filter !== "missing" || !q) return [];
+    return activeRows.filter((r) => {
+      if (!r.name.toLowerCase().includes(q)) return false;
+      const e = edits[r.partTypeId];
+      return (e?.qty ?? 0) > 0 || r.sold > 0 || r.other > 0;
+    });
+  }, [activeRows, edits, search, filter]);
+
   const zoneCounts = useMemo(() => {
     const c: Record<Zone, number> = {
       INTERIOR: 0,
@@ -212,7 +224,7 @@ export function VehicleInventory({
     setEdits((prev) => ({ ...prev, [id]: { ...prev[id], price } }));
   }
 
-  function save(also?: { partTypeId: string; qty: number }) {
+  function save(also?: { partTypeId: string; qty: number; condition: Cond }) {
     const payload = JSON.stringify({
       changes: [
         ...dirty
@@ -222,7 +234,16 @@ export function VehicleInventory({
             qty: edits[r.partTypeId].qty,
             price: Number(edits[r.partTypeId].price || 0),
           })),
-        ...(also ? [{ partTypeId: also.partTypeId, qty: also.qty, price: Number(edits[also.partTypeId]?.price || 0) }] : []),
+        ...(also
+          ? [
+              {
+                partTypeId: also.partTypeId,
+                qty: also.qty,
+                condition: also.condition,
+                price: Number(edits[also.partTypeId]?.price || 0),
+              },
+            ]
+          : []),
       ],
       extras: validExtras.map((e) => ({
         name: e.name,
@@ -318,6 +339,7 @@ export function VehicleInventory({
                     } else {
                       setConfirmQty(1);
                       setConfirmStep("photo");
+                      setConfirmCond("USED_GOOD");
                       setConfirmTarget(r);
                     }
                   }}
@@ -410,6 +432,24 @@ export function VehicleInventory({
             <p className="px-3 py-8 text-center text-sm text-muted-foreground">No hay piezas que coincidan.</p>
           )}
         </div>
+        {hiddenAssigned.length > 0 && (
+          <p className="rounded-md border border-amber-500/40 bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950/30">
+            {hiddenAssigned.length === 1
+              ? `"${hiddenAssigned[0].name}" ya está asignada a este vehículo`
+              : `${hiddenAssigned.length} piezas con ese nombre ya están asignadas a este vehículo`}
+            , por eso no sale en &quot;Por asignar&quot;.{" "}
+            <button
+              type="button"
+              className="font-medium underline"
+              onClick={() => {
+                setFilter("all");
+                setZone(hiddenAssigned[0].zone);
+              }}
+            >
+              Verla en &quot;Todas&quot;
+            </button>
+          </p>
+        )}
 
         <div className="space-y-3 border-t pt-4">
           <p className="text-sm font-medium">Agregar una pieza que no está en la lista</p>
@@ -599,7 +639,7 @@ export function VehicleInventory({
           {confirmTarget && confirmStep === "qty" && (
             <>
               <DialogHeader>
-                <DialogTitle>¿Cuántas unidades trae?</DialogTitle>
+                <DialogTitle>¿Cuántas trae y en qué estado?</DialogTitle>
                 <DialogDescription>
                   Se guarda en {vehicleName} al aceptar (junto con cualquier otro cambio que tengas pendiente).
                 </DialogDescription>
@@ -616,13 +656,34 @@ export function VehicleInventory({
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty });
+                      save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond });
                     }
                   }}
                   className="w-20"
                   autoFocus
                 />
               </label>
+              <div className="flex items-center gap-2 text-sm">
+                Estado
+                <div className="flex gap-1">
+                  {(
+                    [
+                      ["USED_GOOD", "Buen estado"],
+                      ["FOR_PARTS", "Rota"],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <Button
+                      key={value}
+                      type="button"
+                      size="sm"
+                      variant={confirmCond === value ? "default" : "outline"}
+                      onClick={() => setConfirmCond(value)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="ghost" disabled={isPending} onClick={() => setConfirmStep("photo")}>
                   Atrás
@@ -630,7 +691,7 @@ export function VehicleInventory({
                 <Button
                   type="button"
                   disabled={isPending}
-                  onClick={() => save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty })}
+                  onClick={() => save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond })}
                 >
                   {isPending ? "Guardando…" : "Guardar"}
                 </Button>

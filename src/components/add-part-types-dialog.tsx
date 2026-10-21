@@ -49,7 +49,9 @@ function AddForm({ defaultZone, defaultName, onClose, onAdded }: Props) {
         onAdded(created);
       }
       if (result.existing?.length) {
-        toast.info(`Ya existían en el catálogo: ${result.existing.join(", ")}.`);
+        toast.info(
+          `Ya existían en el catálogo: ${result.existing.join(", ")}. Si no la ves en "Por asignar", este vehículo ya la tiene asignada (mírala en "Todas").`,
+        );
       }
       if (created.length || !result.existing?.length) onClose();
     });

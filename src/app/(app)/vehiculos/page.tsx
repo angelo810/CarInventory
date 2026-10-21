@@ -27,10 +27,15 @@ export default async function VehiculosPage() {
             Vehículos comprados para desmantelar y extraer piezas.
           </p>
         </div>
-        <Button render={<Link href="/vehiculos/nuevo" />} nativeButton={false}>
-          <Plus className="size-4" />
-          Nuevo vehículo
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" render={<Link href="/vehiculos/por-pieza" />} nativeButton={false}>
+            Asignar por pieza
+          </Button>
+          <Button render={<Link href="/vehiculos/nuevo" />} nativeButton={false}>
+            <Plus className="size-4" />
+            Nuevo vehículo
+          </Button>
+        </div>
       </div>
 
       <Card>

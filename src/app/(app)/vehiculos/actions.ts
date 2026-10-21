@@ -260,8 +260,11 @@ export async function deleteVehicle(id: string): Promise<{ error?: string }> {
   return {};
 }
 
+const conditionSchema = z.enum(["USED_GOOD", "FOR_PARTS", "USED_FAIR", "NEW"]);
+
 const inventoryChangeSchema = z.object({
   partTypeId: z.string(),
+  condition: conditionSchema.optional(),
   qty: z.coerce.number().int().min(0).max(200),
   price: z.coerce.number().min(0),
 });
@@ -311,7 +314,13 @@ export async function saveVehicleInventory(
         if (!vehicle) throw new Error("El vehículo ya no existe.");
         const business = vehicle.business;
 
-        const newParts: { partTypeId: string; categoryName: string; price: number; cost: number }[] = [];
+        const newParts: {
+          partTypeId: string;
+          categoryName: string;
+          price: number;
+          cost: number;
+          condition: z.infer<typeof conditionSchema>;
+        }[] = [];
 
         for (const change of changes) {
           const type = await tx.partType.findUnique({
@@ -351,6 +360,7 @@ export async function saveVehicleInventory(
               categoryName: type.category.name,
               price: change.price,
               cost: Number(available[0]?.cost ?? 0),
+              condition: change.condition ?? "USED_GOOD",
             });
           }
         }
@@ -364,7 +374,13 @@ export async function saveVehicleInventory(
             data: { business, name: extra.name, categoryId: category.id, zone: extra.zone, catalog: false, kept: true },
           });
           for (let i = 0; i < extra.qty; i++) {
-            newParts.push({ partTypeId: type.id, categoryName: category.name, price: extra.price, cost: 0 });
+            newParts.push({
+              partTypeId: type.id,
+              categoryName: category.name,
+              price: extra.price,
+              cost: 0,
+              condition: "USED_GOOD",
+            });
           }
         }
 
@@ -378,6 +394,7 @@ export async function saveVehicleInventory(
               sourceVehicleId: vehicleId,
               price: p.price,
               cost: p.cost,
+              condition: p.condition,
             })),
           });
           created = newParts.length;
@@ -394,4 +411,73 @@ export async function saveVehicleInventory(
   revalidatePath("/piezas");
   revalidatePath("/buscar");
   return { created, removed };
+}
+
+const assignRowSchema = z.object({
+  vehicleId: z.string(),
+  qty: z.coerce.number().int().min(1).max(50),
+  condition: conditionSchema,
+});
+
+/**
+ * Asigna UNA pieza a varios vehículos a la vez (la vista "por pieza"): a cada vehículo se le agregan
+ * `qty` unidades nuevas con el estado indicado. No quita ni modifica lo que el vehículo ya tenía.
+ */
+export async function assignPartToVehicles(
+  partTypeId: string,
+  rowsJson: string,
+): Promise<{ error?: string; created?: number }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  let rows: z.infer<typeof assignRowSchema>[];
+  try {
+    rows = z.array(assignRowSchema).min(1).parse(JSON.parse(rowsJson));
+  } catch {
+    return { error: "Hay datos inválidos: revisa cantidades y estados." };
+  }
+
+  const type = await prisma.partType.findUnique({ where: { id: partTypeId }, include: { category: true } });
+  if (!type) return { error: "No encontré esa pieza." };
+
+  const vehicles = await prisma.sourceVehicle.findMany({
+    where: { id: { in: rows.map((r) => r.vehicleId) }, business: type.business },
+    select: { id: true },
+  });
+  const valid = new Set(vehicles.map((v) => v.id));
+  const wanted = rows.filter((r) => valid.has(r.vehicleId));
+  if (wanted.length !== rows.length) return { error: "Alguno de los vehículos no corresponde a esta empresa." };
+
+  const total = wanted.reduce((sum, r) => sum + r.qty, 0);
+  try {
+    await prisma.$transaction(
+      async (tx) => {
+        const seq = await tx.$queryRaw<{ n: bigint }[]>`SELECT nextval('part_sku_seq') AS n FROM generate_series(1, ${total})`;
+        let i = 0;
+        await tx.part.createMany({
+          data: wanted.flatMap((r) =>
+            Array.from({ length: r.qty }, () => ({
+              business: type.business,
+              sku: `${categoryCode(type.category.name)}-${seq[i++].n.toString().padStart(6, "0")}`,
+              partTypeId: type.id,
+              sourceVehicleId: r.vehicleId,
+              condition: r.condition,
+              cost: 0,
+              price: 0,
+            })),
+          ),
+        });
+      },
+      { timeout: 60000, maxWait: 15000 },
+    );
+  } catch {
+    return { error: "No se pudieron guardar las piezas." };
+  }
+
+  for (const r of wanted) revalidatePath(`/vehiculos/${r.vehicleId}`);
+  revalidatePath("/vehiculos");
+  revalidatePath("/vehiculos/por-pieza");
+  revalidatePath("/piezas");
+  revalidatePath("/buscar");
+  return { created: total };
 }
