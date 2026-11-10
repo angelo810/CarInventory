@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Combine, ImageOff, Minus, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { saveVehicleInventory } from "../actions";
-import { deletePartType, renamePartType } from "@/app/(app)/piezas/actions";
+import { deletePartType, mergePartTypes } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { cn } from "@/lib/utils";
 import { RenamePartDialog } from "@/components/rename-part-dialog";
 import { partImageSrc } from "@/lib/part-image";
+import { matchesSearch, searchTokens } from "@/lib/text";
 import { AddPartTypesDialog } from "@/components/add-part-types-dialog";
 
 type Zone = "INTERIOR" | "MECHANICAL" | "EXTERIOR" | "DOCUMENTS" | "SCRAP" | "COMPLETE" | "OTHER";
@@ -134,10 +135,10 @@ export function VehicleInventory({
 
   const mergeOptions = useMemo(() => {
     if (!mergeTarget) return [];
-    const q = mergeQuery.trim().toLowerCase();
+    const q = searchTokens(mergeQuery);
     return activeRows
       .filter((r) => r.partTypeId !== mergeTarget.partTypeId)
-      .filter((r) => !q || r.name.toLowerCase().includes(q))
+      .filter((r) => matchesSearch(r.name, q))
       .sort((a, b) => nameCollator.compare(a.name, b.name))
       .slice(0, 30);
   }, [activeRows, mergeTarget, mergeQuery]);
@@ -146,7 +147,7 @@ export function VehicleInventory({
     if (!mergeTarget) return;
     const source = mergeTarget;
     startMerge(async () => {
-      const result = await renamePartType(source.partTypeId, target.name);
+      const result = await mergePartTypes(source.partTypeId, target.partTypeId);
       if (result.error) {
         toast.error(result.error);
         return;
@@ -174,13 +175,13 @@ export function VehicleInventory({
   const groupBySold = filter === "sold";
 
   const visible = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = searchTokens(search);
     return activeRows
       .filter((r) => {
         if (!groupBySold && r.zone !== zone) return false;
         const e = edits[r.partTypeId];
         if (!groupBySold && zone === "EXTERIOR" && !showAllExterior && !r.kept && e.qty === 0 && r.sold === 0) return false;
-        if (q && !r.name.toLowerCase().includes(q)) return false;
+        if (!matchesSearch(r.name, q)) return false;
         if (filter === "available") return e.qty > 0;
         if (filter === "sold") return r.sold > 0;
         if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0;
@@ -190,10 +191,10 @@ export function VehicleInventory({
   }, [activeRows, edits, zone, search, filter, showAllExterior, groupBySold]);
 
   const hiddenAssigned = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (filter !== "missing" || !q) return [];
+    const q = searchTokens(search);
+    if (filter !== "missing" || q.length === 0) return [];
     return activeRows.filter((r) => {
-      if (!r.name.toLowerCase().includes(q)) return false;
+      if (!matchesSearch(r.name, q)) return false;
       const e = edits[r.partTypeId];
       return (e?.qty ?? 0) > 0 || r.sold > 0 || r.other > 0;
     });

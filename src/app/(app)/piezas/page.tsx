@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBusiness } from "@/lib/business";
+import { partTypeIdsMatching, vehicleIdsMatching } from "@/lib/accent-search";
 import type { Prisma } from "@/generated/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,11 +54,16 @@ export default async function PiezasPage({ searchParams }: { searchParams: Promi
     );
   }
   if (query) {
+    // nombres y vehículos se comparan sin tildes ("arnes" encuentra "Arnés")
+    const [typeIds, vehicleIds] = await Promise.all([
+      partTypeIdsMatching(business, query),
+      vehicleIdsMatching(business, query),
+    ]);
     and.push({
       OR: [
         { sku: { contains: query, mode: "insensitive" } },
-        { partType: { name: { contains: query, mode: "insensitive" } } },
-        { sourceVehicle: { OR: [{ brand: { contains: query, mode: "insensitive" } }, { model: { contains: query, mode: "insensitive" } }] } },
+        { partTypeId: { in: typeIds } },
+        { sourceVehicleId: { in: vehicleIds } },
       ],
     });
   }

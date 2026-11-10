@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveBusiness } from "@/lib/business";
+import { partTypeIdsMatching, vehicleIdsMatching } from "@/lib/accent-search";
 
 // Piezas disponibles agrupadas por (tipo de pieza, vehículo) para el formulario de ventas.
 export async function GET(req: NextRequest) {
@@ -21,17 +22,25 @@ export async function GET(req: NextRequest) {
   const tokens = q.split(/\s+/).filter(Boolean);
   const business = await getActiveBusiness();
 
+  // por palabra: ids de piezas y vehículos que la contienen sin importar tildes
+  const perToken = await Promise.all(
+    tokens.map(async (t) => ({
+      token: t,
+      typeIds: await partTypeIdsMatching(business, t),
+      vehicleIds: await vehicleIdsMatching(business, t),
+    })),
+  );
+
   const parts = await prisma.part.findMany({
     where: {
       business,
       status: "AVAILABLE",
       ...(vehicleId ? { sourceVehicleId: vehicleId } : {}),
-      AND: tokens.map((t) => ({
+      AND: perToken.map(({ token, typeIds, vehicleIds }) => ({
         OR: [
-          { sku: { contains: t, mode: "insensitive" as const } },
-          { partType: { name: { contains: t, mode: "insensitive" as const } } },
-          { sourceVehicle: { brand: { contains: t, mode: "insensitive" as const } } },
-          { sourceVehicle: { model: { contains: t, mode: "insensitive" as const } } },
+          { sku: { contains: token, mode: "insensitive" as const } },
+          { partTypeId: { in: typeIds } },
+          { sourceVehicleId: { in: vehicleIds } },
         ],
       })),
     },

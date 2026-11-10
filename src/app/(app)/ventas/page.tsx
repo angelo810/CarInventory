@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getActiveBusiness } from "@/lib/business";
+import {
+  employeeIdsMatching,
+  partIdsWithNotesMatching,
+  partTypeIdsMatching,
+  saleIdsWithNotesMatching,
+  vehicleIdsMatching,
+} from "@/lib/accent-search";
 import type { Prisma } from "@/generated/prisma/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,23 +65,34 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
 
   const contains = (v: string) => ({ contains: v, mode: "insensitive" as const });
 
+  // nombres de pieza, vehículo y empleado se comparan sin tildes ("arnes" encuentra "Arnés")
+  const [typeIds, vehicleIds, employeeIds, saleNoteIds, partNoteIds] = query
+    ? await Promise.all([
+        partTypeIdsMatching(business, query),
+        vehicleIdsMatching(business, query),
+        employeeIdsMatching(query),
+        saleIdsWithNotesMatching(business, query),
+        partIdsWithNotesMatching(business, query),
+      ])
+    : [[], [], [], [], []];
+
   // Filtro a nivel de venta
   const saleAnd: Prisma.SaleWhereInput[] = [{ business }];
   if (dateFilter) saleAnd.push({ saleDate: dateFilter });
   if (query) {
     saleAnd.push({
       OR: [
-        { notes: contains(query) },
-        { employee: { name: contains(query) } },
+        { id: { in: saleNoteIds } },
+        { employeeId: { in: employeeIds } },
         {
           items: {
             some: {
               part: {
                 OR: [
                   { sku: contains(query) },
-                  { notes: contains(query) },
-                  { partType: { name: contains(query) } },
-                  { sourceVehicle: { OR: [{ brand: contains(query) }, { model: contains(query) }] } },
+                  { id: { in: partNoteIds } },
+                  { partTypeId: { in: typeIds } },
+                  { sourceVehicleId: { in: vehicleIds } },
                 ],
               },
             },
@@ -94,11 +112,11 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
     itemAnd.push({
       OR: [
         { part: { sku: contains(query) } },
-        { part: { notes: contains(query) } },
-        { part: { partType: { name: contains(query) } } },
-        { part: { sourceVehicle: { OR: [{ brand: contains(query) }, { model: contains(query) }] } } },
-        { sale: { employee: { name: contains(query) } } },
-        { sale: { notes: contains(query) } },
+        { partId: { in: partNoteIds } },
+        { part: { partTypeId: { in: typeIds } } },
+        { part: { sourceVehicleId: { in: vehicleIds } } },
+        { sale: { employeeId: { in: employeeIds } } },
+        { saleId: { in: saleNoteIds } },
       ],
     });
   }

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { PartStatus } from "@/generated/prisma/enums";
+import { normalizeText } from "@/lib/text";
 
 export type PartSearchFilters = {
   q?: string;
@@ -14,10 +15,18 @@ export type PartSearchFilters = {
 
 const SIMILARITY_THRESHOLD = 0.25;
 
-export async function searchPartTypes(filters: PartSearchFilters) {
-  const { q, brand, model, year, categoryId, status = "AVAILABLE", business } = filters;
+// Texto de una columna sin tildes ni mayúsculas, para que "arnes" encuentre "Arnés" (y al revés).
+// La búsqueda también se normaliza igual (normalizeText) antes de compararla.
+const unacc = (col: string) =>
+  Prisma.raw(`translate(lower(${col}), 'áéíóúüñÁÉÍÓÚÜÑ', 'aeiouunaeiouun')`);
 
-  const tokens = (q ?? "").trim().split(/\s+/).filter(Boolean);
+export async function searchPartTypes(filters: PartSearchFilters) {
+  const { q, categoryId, status = "AVAILABLE", business } = filters;
+  const brand = filters.brand ? normalizeText(filters.brand) : undefined;
+  const model = filters.model ? normalizeText(filters.model) : undefined;
+  const year = filters.year;
+
+  const tokens = normalizeText(q ?? "").trim().split(/\s+/).filter(Boolean);
   const yearTokens = tokens.filter((t) => /^(19|20)\d{2}$/.test(t)).map(Number);
   const textTokens = tokens.filter((t) => !/^(19|20)\d{2}$/.test(t));
 
@@ -29,14 +38,14 @@ export async function searchPartTypes(filters: PartSearchFilters) {
     const like = `%${token}%`;
     conditions.push(Prisma.sql`
       (
-        similarity(pt.name, ${token}) > ${SIMILARITY_THRESHOLD} OR pt.name ILIKE ${like}
-        OR similarity(cat.name, ${token}) > ${SIMILARITY_THRESHOLD} OR cat.name ILIKE ${like}
+        similarity(${unacc("pt.name")}, ${token}) > ${SIMILARITY_THRESHOLD} OR ${unacc("pt.name")} ILIKE ${like}
+        OR similarity(${unacc("cat.name")}, ${token}) > ${SIMILARITY_THRESHOLD} OR ${unacc("cat.name")} ILIKE ${like}
         OR EXISTS (
           SELECT 1 FROM "PartCompatibility" pc
           WHERE pc."partTypeId" = pt.id
             AND (
-              similarity(pc.brand, ${token}) > ${SIMILARITY_THRESHOLD} OR pc.brand ILIKE ${like}
-              OR similarity(pc.model, ${token}) > ${SIMILARITY_THRESHOLD} OR pc.model ILIKE ${like}
+              similarity(${unacc("pc.brand")}, ${token}) > ${SIMILARITY_THRESHOLD} OR ${unacc("pc.brand")} ILIKE ${like}
+              OR similarity(${unacc("pc.model")}, ${token}) > ${SIMILARITY_THRESHOLD} OR ${unacc("pc.model")} ILIKE ${like}
             )
         )
         OR EXISTS (
@@ -63,7 +72,7 @@ export async function searchPartTypes(filters: PartSearchFilters) {
       EXISTS (
         SELECT 1 FROM "PartCompatibility" pc
         WHERE pc."partTypeId" = pt.id
-          AND (similarity(pc.brand, ${brand}) > ${SIMILARITY_THRESHOLD} OR pc.brand ILIKE ${like})
+          AND (similarity(${unacc("pc.brand")}, ${brand}) > ${SIMILARITY_THRESHOLD} OR ${unacc("pc.brand")} ILIKE ${like})
       )
     `);
   }
@@ -74,7 +83,7 @@ export async function searchPartTypes(filters: PartSearchFilters) {
       EXISTS (
         SELECT 1 FROM "PartCompatibility" pc
         WHERE pc."partTypeId" = pt.id
-          AND (similarity(pc.model, ${model}) > ${SIMILARITY_THRESHOLD} OR pc.model ILIKE ${like})
+          AND (similarity(${unacc("pc.model")}, ${model}) > ${SIMILARITY_THRESHOLD} OR ${unacc("pc.model")} ILIKE ${like})
       )
     `);
   }
@@ -96,7 +105,7 @@ export async function searchPartTypes(filters: PartSearchFilters) {
   const scoreExpr =
     textTokens.length > 0
       ? Prisma.sql`GREATEST(${Prisma.join(
-          textTokens.map((t) => Prisma.sql`similarity(pt.name, ${t})`),
+          textTokens.map((t) => Prisma.sql`similarity(${unacc("pt.name")}, ${t})`),
           ", ",
         )})`
       : Prisma.sql`0`;

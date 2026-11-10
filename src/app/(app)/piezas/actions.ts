@@ -413,3 +413,47 @@ export async function uploadPartTypeImage(
   revalidatePath("/piezas/tipos");
   return { url };
 }
+
+/**
+ * Fusiona la pieza `sourceId` dentro de `targetId`: todas sus unidades (vendidas y disponibles) pasan a
+ * la pieza destino y la de origen se elimina. Va por id (no por nombre) para que funcione también cuando
+ * las dos se llaman igual.
+ */
+export async function mergePartTypes(sourceId: string, targetId: string): Promise<{ error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+  if (sourceId === targetId) return { error: "Elige otra pieza para fusionar." };
+
+  const [source, target] = await Promise.all([
+    prisma.partType.findUnique({ where: { id: sourceId } }),
+    prisma.partType.findUnique({ where: { id: targetId } }),
+  ]);
+  if (!source || !target) return { error: "No encontré una de las piezas." };
+  if (source.business !== target.business) return { error: "Las piezas son de empresas distintas." };
+
+  await prisma.$transaction([
+    prisma.part.updateMany({ where: { partTypeId: sourceId }, data: { partTypeId: targetId } }),
+    prisma.partCompatibility.deleteMany({ where: { partTypeId: sourceId } }),
+    // si solo la de origen tenía foto, se la queda la pieza destino
+    ...(source.imageUrl && !target.imageUrl
+      ? [prisma.partType.update({ where: { id: targetId }, data: { imageUrl: source.imageUrl } })]
+      : []),
+    prisma.partType.delete({ where: { id: sourceId } }),
+  ]);
+
+  if (source.imageUrl && target.imageUrl && source.imageUrl !== target.imageUrl) {
+    try {
+      await del(source.imageUrl);
+    } catch {
+      // la foto sobrante no es crítica
+    }
+  }
+
+  revalidatePath("/piezas");
+  revalidatePath("/piezas/tipos");
+  revalidatePath("/piezas/nuevo");
+  revalidatePath("/vehiculos");
+  revalidatePath("/ventas");
+  revalidatePath("/ventas/revisar");
+  return {};
+}
