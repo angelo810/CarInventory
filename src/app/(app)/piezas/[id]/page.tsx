@@ -47,6 +47,7 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
             <Badge variant="outline">{part.partType.category.name}</Badge>
           </div>
           <p className="text-sm text-muted-foreground font-mono">{part.sku}</p>
+          {part.size && <p className="text-sm text-muted-foreground">Medida: {part.size}</p>}
         </div>
         <Badge className="text-sm" variant={partStatusBadgeVariant[part.status]}>
           {partStatusLabels[part.status]}
@@ -118,6 +119,7 @@ export default async function PiezaDetailPage({ params }: { params: Promise<{ id
               condition={part.condition}
               status={part.status}
               location={part.location ?? ""}
+              size={part.size ?? ""}
               cost={part.cost.toString()}
               price={part.price.toString()}
               notes={part.notes ?? ""}

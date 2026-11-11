@@ -265,6 +265,7 @@ const conditionSchema = z.enum(["USED_GOOD", "FOR_PARTS", "USED_FAIR", "NEW"]);
 const inventoryChangeSchema = z.object({
   partTypeId: z.string(),
   condition: conditionSchema.optional(),
+  size: z.string().trim().max(60).optional(),
   qty: z.coerce.number().int().min(0).max(200),
   price: z.coerce.number().min(0),
 });
@@ -320,6 +321,7 @@ export async function saveVehicleInventory(
           price: number;
           cost: number;
           condition: z.infer<typeof conditionSchema>;
+          size?: string | null;
         }[] = [];
 
         for (const change of changes) {
@@ -361,6 +363,7 @@ export async function saveVehicleInventory(
               price: change.price,
               cost: Number(available[0]?.cost ?? 0),
               condition: change.condition ?? "USED_GOOD",
+              size: change.size || null,
             });
           }
         }
@@ -395,6 +398,7 @@ export async function saveVehicleInventory(
               price: p.price,
               cost: p.cost,
               condition: p.condition,
+              size: p.size ?? null,
             })),
           });
           created = newParts.length;
@@ -417,6 +421,7 @@ const assignRowSchema = z.object({
   vehicleId: z.string(),
   qty: z.coerce.number().int().min(1).max(50),
   condition: conditionSchema,
+  size: z.string().trim().max(60).optional(),
 });
 
 /**
@@ -462,6 +467,7 @@ export async function assignPartToVehicles(
               partTypeId: type.id,
               sourceVehicleId: r.vehicleId,
               condition: r.condition,
+              size: r.size || null,
               cost: 0,
               price: 0,
             })),

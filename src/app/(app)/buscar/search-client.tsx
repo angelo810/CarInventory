@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -51,8 +51,8 @@ const STATUS_OPTIONS = [
   { value: "IN_REVIEW", label: "En revisión" },
 ];
 
-export function SearchClient({ categories }: { categories: Category[] }) {
-  const [q, setQ] = useState("");
+export function SearchClient({ categories, initialQuery = "" }: { categories: Category[]; initialQuery?: string }) {
+  const [q, setQ] = useState(initialQuery);
   const [categoryId, setCategoryId] = useState<string>("ALL");
   const [status, setStatus] = useState<string>("AVAILABLE");
   const [results, setResults] = useState<PartTypeResult[] | null>(null);
@@ -94,6 +94,14 @@ export function SearchClient({ categories }: { categories: Category[] }) {
         });
     }, 250);
   }
+
+  // Si se llega desde el Panel con una búsqueda (?q=...), se ejecuta de una vez
+  useEffect(() => {
+    if (!initialQuery.trim()) return;
+    const t = setTimeout(() => scheduleSearch(initialQuery, "ALL", "AVAILABLE"), 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function updateQuery(value: string) {
     setQ(value);

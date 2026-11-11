@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { cn } from "@/lib/utils";
 import { RenamePartDialog } from "@/components/rename-part-dialog";
 import { partImageSrc } from "@/lib/part-image";
+import { needsSize } from "@/lib/part-size";
 import { matchesSearch, searchTokens } from "@/lib/text";
 import { AddPartTypesDialog } from "@/components/add-part-types-dialog";
 
@@ -101,6 +102,7 @@ export function VehicleInventory({
   const [confirmQty, setConfirmQty] = useState(1);
   const [confirmStep, setConfirmStep] = useState<ConfirmStep>("photo");
   const [confirmCond, setConfirmCond] = useState<Cond>("USED_GOOD");
+  const [confirmSize, setConfirmSize] = useState("");
   const [renames, setRenames] = useState<Record<string, string>>({});
   const [addOpen, setAddOpen] = useState(false);
   const [addedRows, setAddedRows] = useState<InventoryRow[]>([]);
@@ -225,7 +227,7 @@ export function VehicleInventory({
     setEdits((prev) => ({ ...prev, [id]: { ...prev[id], price } }));
   }
 
-  function save(also?: { partTypeId: string; qty: number; condition: Cond }) {
+  function save(also?: { partTypeId: string; qty: number; condition: Cond; size?: string }) {
     const payload = JSON.stringify({
       changes: [
         ...dirty
@@ -241,6 +243,7 @@ export function VehicleInventory({
                 partTypeId: also.partTypeId,
                 qty: also.qty,
                 condition: also.condition,
+                size: also.size,
                 price: Number(edits[also.partTypeId]?.price || 0),
               },
             ]
@@ -341,6 +344,7 @@ export function VehicleInventory({
                       setConfirmQty(1);
                       setConfirmStep("photo");
                       setConfirmCond("USED_GOOD");
+                      setConfirmSize("");
                       setConfirmTarget(r);
                     }
                   }}
@@ -657,13 +661,25 @@ export function VehicleInventory({
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond });
+                      save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond, size: confirmSize });
                     }
                   }}
                   className="w-20"
                   autoFocus
                 />
               </label>
+              {needsSize(confirmTarget.name) && (
+                <label className="flex items-center gap-2 text-sm">
+                  Medida
+                  <Input
+                    value={confirmSize}
+                    onChange={(e) => setConfirmSize(e.target.value)}
+                    placeholder="Ej: rin 15 · 175/65 R14"
+                    className="w-56"
+                    maxLength={60}
+                  />
+                </label>
+              )}
               <div className="flex items-center gap-2 text-sm">
                 Estado
                 <div className="flex gap-1">
@@ -692,7 +708,7 @@ export function VehicleInventory({
                 <Button
                   type="button"
                   disabled={isPending}
-                  onClick={() => save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond })}
+                  onClick={() => save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond, size: confirmSize })}
                 >
                   {isPending ? "Guardando…" : "Guardar"}
                 </Button>

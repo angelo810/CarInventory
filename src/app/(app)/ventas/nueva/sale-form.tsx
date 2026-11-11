@@ -30,10 +30,12 @@ const NONE = "__none__";
 
 export function SaleForm({
   defaultDate,
+  defaultNotes = "",
   employees,
   vehicles,
 }: {
   defaultDate: string;
+  defaultNotes?: string;
   employees: { id: string; name: string }[];
   vehicles: { id: string; label: string }[];
 }) {
@@ -312,7 +314,7 @@ export function SaleForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">Notas</Label>
-            <Textarea id="notes" name="notes" rows={2} />
+            <Textarea id="notes" name="notes" rows={2} defaultValue={defaultNotes} />
           </div>
         </CardContent>
       </Card>

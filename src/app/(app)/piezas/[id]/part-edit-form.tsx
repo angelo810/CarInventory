@@ -24,6 +24,7 @@ export function PartEditForm({
   condition,
   status,
   location,
+  size,
   cost,
   price,
   notes,
@@ -37,6 +38,7 @@ export function PartEditForm({
   condition: PartCondition;
   status: PartStatus;
   location: string;
+  size: string;
   cost: string;
   price: string;
   notes: string;
@@ -55,7 +57,7 @@ export function PartEditForm({
   // montado (no navega a otra ruta). Si un campo cambió de verdad, esta key cambia y React
   // remonta el formulario entero con los valores nuevos, en vez de intentarle cambiar el
   // "defaultValue" a un campo no controlado ya inicializado (lo que Base UI no permite).
-  const formKey = [partTypeId, sourceVehicleId, condition, status, location, cost, price, notes].join("|");
+  const formKey = [partTypeId, sourceVehicleId, condition, status, location, size, cost, price, notes].join("|");
 
   return (
     <form key={formKey} action={formAction} className="space-y-4">
@@ -121,6 +123,10 @@ export function PartEditForm({
         <div className="space-y-2">
           <Label htmlFor="location">Ubicación</Label>
           <Input id="location" name="location" defaultValue={location} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="size">Medida (llantas y aros)</Label>
+          <Input id="size" name="size" defaultValue={size} placeholder="Ej: rin 15 · 175/65 R14" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="cost">Costo real (USD)</Label>

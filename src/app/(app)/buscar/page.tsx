@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { SearchClient } from "./search-client";
 
-export default async function BuscarPage() {
+export default async function BuscarPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
   const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
 
   return (
@@ -12,7 +13,7 @@ export default async function BuscarPage() {
           Busca por nombre, marca, modelo, año, categoría o SKU. Resultados al instante.
         </p>
       </div>
-      <SearchClient categories={categories} />
+      <SearchClient categories={categories} initialQuery={q?.trim() ?? ""} />
     </div>
   );
 }

@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PartTypePicker, type PartTypeOption } from "@/components/part-type-picker";
 import { partImageSrc } from "@/lib/part-image";
+import { needsSize } from "@/lib/part-size";
 
 type Cond = "USED_GOOD" | "FOR_PARTS";
 type Counts = { available: number; sold: number; other: number };
 export type PartCounts = Record<string, Record<string, Counts>>;
 type TypeWithImage = PartTypeOption & { imageUrl: string | null };
-type Row = { qty: number; condition: Cond };
+type Row = { qty: number; condition: Cond; size: string };
 
 const COND_OPTIONS = [
   ["USED_GOOD", "Buen estado"],
@@ -68,7 +69,7 @@ export function AssignByPart({
 
   function setRow(vehicleId: string, patch: Partial<Row>) {
     setRows((prev) => {
-      const cur = prev[vehicleId] ?? { qty: 0, condition: "USED_GOOD" as Cond };
+      const cur = prev[vehicleId] ?? { qty: 0, condition: "USED_GOOD" as Cond, size: "" };
       return { ...prev, [vehicleId]: { ...cur, ...patch } };
     });
   }
@@ -82,7 +83,7 @@ export function AssignByPart({
   function save() {
     if (!selected || pending.length === 0) return;
     const payload = JSON.stringify(
-      pending.map(([vehicleId, r]) => ({ vehicleId, qty: r.qty, condition: r.condition })),
+      pending.map(([vehicleId, r]) => ({ vehicleId, qty: r.qty, condition: r.condition, size: r.size })),
     );
     startTransition(async () => {
       const result = await assignPartToVehicles(selected.id, payload);
@@ -158,7 +159,7 @@ export function AssignByPart({
             <div className="max-h-[32rem] divide-y overflow-y-auto rounded-lg border">
               {visible.map((v) => {
                 const c = counts[typeId]?.[v.id];
-                const r = rows[v.id] ?? { qty: 0, condition: "USED_GOOD" as Cond };
+                const r = rows[v.id] ?? { qty: 0, condition: "USED_GOOD" as Cond, size: "" };
                 return (
                   <div
                     key={v.id}
@@ -186,6 +187,16 @@ export function AssignByPart({
                         className="h-7 w-16 px-1.5 text-center"
                       />
                     </label>
+                    {selected && needsSize(selected.name) && (
+                      <Input
+                        value={r.size}
+                        disabled={r.qty === 0}
+                        onChange={(e) => setRow(v.id, { size: e.target.value })}
+                        placeholder="Medida"
+                        className="h-7 w-28 px-1.5"
+                        maxLength={60}
+                      />
+                    )}
                     <div className="flex gap-1">
                       {COND_OPTIONS.map(([value, label]) => (
                         <Button

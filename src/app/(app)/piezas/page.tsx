@@ -174,6 +174,7 @@ export default async function PiezasPage({ searchParams }: { searchParams: Promi
                     <Link href={`/piezas/${p.id}`} className="font-medium hover:underline">
                       {p.partType.name}
                     </Link>
+                    {p.size && <div className="text-xs text-muted-foreground">Medida: {p.size}</div>}
                   </TableCell>
                   <TableCell>{p.partType.category.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">

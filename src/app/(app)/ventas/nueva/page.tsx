@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getActiveBusiness } from "@/lib/business";
+import { nextSaleNote } from "@/lib/sale-number";
 import { SaleForm } from "./sale-form";
 
 function toLocalInput(d: Date) {
@@ -9,12 +10,13 @@ function toLocalInput(d: Date) {
 
 export default async function NuevaVentaPage() {
   const business = await getActiveBusiness();
-  const [employees, vehicles] = await Promise.all([
+  const [employees, vehicles, defaultNotes] = await Promise.all([
     prisma.employee.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
     prisma.sourceVehicle.findMany({
       where: { business, status: { not: "ARCHIVED" } },
       orderBy: [{ brand: "asc" }, { model: "asc" }],
     }),
+    nextSaleNote(),
   ]);
 
   return (
@@ -27,6 +29,7 @@ export default async function NuevaVentaPage() {
       </div>
       <SaleForm
         defaultDate={toLocalInput(new Date())}
+        defaultNotes={defaultNotes}
         employees={employees.map((e) => ({ id: e.id, name: e.name }))}
         vehicles={vehicles.map((v) => ({ id: v.id, label: `${v.brand} ${v.model}` }))}
       />
