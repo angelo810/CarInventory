@@ -2,9 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Combine, ImageOff, Minus, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Ban, Check, Combine, ImageOff, Minus, Pencil, Plus, RotateCcw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { saveVehicleInventory } from "../actions";
+import { saveVehicleInventory, setPartExcluded } from "../actions";
 import { deletePartType, mergePartTypes } from "@/app/(app)/piezas/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ export type InventoryRow = {
 };
 
 type Extra = { key: number; name: string; zone: Exclude<Zone, "OTHER">; qty: string; price: string };
-type Filter = "all" | "available" | "sold" | "missing";
+type Filter = "all" | "available" | "sold" | "missing" | "excluded";
 type ConfirmStep = "photo" | "qty";
 type Cond = "USED_GOOD" | "FOR_PARTS";
 
@@ -61,6 +61,7 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "missing", label: "Por asignar" },
   { value: "available", label: "Disponibles" },
   { value: "sold", label: "Vendidas" },
+  { value: "excluded", label: "No están" },
   { value: "all", label: "Todas" },
 ];
 
@@ -73,10 +74,12 @@ const selectClass =
 export function VehicleInventory({
   vehicleId,
   vehicleName,
+  excludedIds,
   rows,
 }: {
   vehicleId: string;
   vehicleName: string;
+  excludedIds: string[];
   rows: InventoryRow[];
 }) {
   const router = useRouter();
@@ -106,6 +109,7 @@ export function VehicleInventory({
   const [renames, setRenames] = useState<Record<string, string>>({});
   const [addOpen, setAddOpen] = useState(false);
   const [addedRows, setAddedRows] = useState<InventoryRow[]>([]);
+  const [excluded, setExcluded] = useState<Set<string>>(() => new Set(excludedIds));
   const allRows = useMemo(
     () => [...rows, ...addedRows.filter((a) => !rows.some((r) => r.partTypeId === a.partTypeId))],
     [rows, addedRows],
@@ -186,11 +190,12 @@ export function VehicleInventory({
         if (!matchesSearch(r.name, q)) return false;
         if (filter === "available") return e.qty > 0;
         if (filter === "sold") return r.sold > 0;
-        if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0;
+        if (filter === "missing") return e.qty === 0 && r.sold === 0 && r.other === 0 && !excluded.has(r.partTypeId);
+        if (filter === "excluded") return excluded.has(r.partTypeId) && e.qty === 0 && r.sold === 0 && r.other === 0;
         return true;
       })
       .sort((a, b) => nameCollator.compare(a.name, b.name));
-  }, [activeRows, edits, zone, search, filter, showAllExterior, groupBySold]);
+  }, [activeRows, edits, zone, search, filter, showAllExterior, groupBySold, excluded]);
 
   const hiddenAssigned = useMemo(() => {
     const q = searchTokens(search);
@@ -198,9 +203,9 @@ export function VehicleInventory({
     return activeRows.filter((r) => {
       if (!matchesSearch(r.name, q)) return false;
       const e = edits[r.partTypeId];
-      return (e?.qty ?? 0) > 0 || r.sold > 0 || r.other > 0;
+      return (e?.qty ?? 0) > 0 || r.sold > 0 || r.other > 0 || excluded.has(r.partTypeId);
     });
-  }, [activeRows, edits, search, filter]);
+  }, [activeRows, edits, search, filter, excluded]);
 
   const zoneCounts = useMemo(() => {
     const c: Record<Zone, number> = {
@@ -217,6 +222,32 @@ export function VehicleInventory({
   }, [activeRows, edits]);
 
   const hiddenExterior = activeRows.filter((r) => r.zone === "EXTERIOR" && !r.kept).length;
+
+  // Marca que este vehículo NO trae la pieza (sale de "Por asignar"); se puede deshacer.
+  function markExcluded(row: { partTypeId: string; name: string }, value: boolean) {
+    const apply = (v: boolean) =>
+      setExcluded((prev) => {
+        const next = new Set(prev);
+        if (v) next.add(row.partTypeId);
+        else next.delete(row.partTypeId);
+        return next;
+      });
+    apply(value);
+    setConfirmTarget(null);
+    void (async () => {
+      const result = await setPartExcluded(vehicleId, row.partTypeId, value);
+      if (result.error) {
+        apply(!value);
+        toast.error(result.error);
+        return;
+      }
+      if (value) {
+        toast.success(`"${row.name}" no está en este vehículo: salió de la lista.`, {
+          action: { label: "Deshacer", onClick: () => markExcluded(row, false) },
+        });
+      }
+    })();
+  }
 
   function setQty(id: string, value: number) {
     const qty = Math.max(0, Math.min(200, Math.floor(value) || 0));
@@ -275,8 +306,8 @@ export function VehicleInventory({
       <CardHeader>
         <CardTitle>Inventario de piezas</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Toca una pieza para marcar que el auto la tiene. El número son las unidades <b>disponibles</b>; las vendidas
-          se muestran aparte y no se pueden quitar.
+          Toca una pieza para marcar que el auto la tiene, o <b>No está</b> si no la trae (sale de la lista). El número
+          son las unidades <b>disponibles</b>; las vendidas se muestran aparte y no se pueden quitar.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -373,7 +404,28 @@ export function VehicleInventory({
                 {r.other > 0 && <Badge variant="secondary">{r.other} reservada{r.other > 1 ? "s" : ""}</Badge>}
                 {!has && r.sold === 0 && r.other === 0 && (
                   <>
-                    <Badge variant="outline">No la trae</Badge>
+                    {excluded.has(r.partTypeId) ? (
+                      <>
+                        <Badge variant="outline" className="h-7 px-3 text-sm">
+                          No está
+                        </Badge>
+                        <Button type="button" variant="outline" size="sm" onClick={() => markExcluded(r, false)}>
+                          <RotateCcw className="size-4" />
+                          Volver a la lista
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 gap-1.5 border-destructive/40 px-4 text-base font-semibold text-destructive hover:bg-destructive/10"
+                        title="Este vehículo no trae esta pieza: sale de la lista"
+                        onClick={() => markExcluded(r, true)}
+                      >
+                        <Ban className="size-4" />
+                        No está
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
@@ -440,8 +492,8 @@ export function VehicleInventory({
         {hiddenAssigned.length > 0 && (
           <p className="rounded-md border border-amber-500/40 bg-amber-50 px-3 py-2 text-sm dark:bg-amber-950/30">
             {hiddenAssigned.length === 1
-              ? `"${hiddenAssigned[0].name}" ya está asignada a este vehículo`
-              : `${hiddenAssigned.length} piezas con ese nombre ya están asignadas a este vehículo`}
+              ? `"${hiddenAssigned[0].name}" ya está asignada a este vehículo o marcada como "No está"`
+              : `${hiddenAssigned.length} piezas con ese nombre ya están asignadas o marcadas como "No está"`}
             , por eso no sale en &quot;Por asignar&quot;.{" "}
             <button
               type="button"
@@ -609,14 +661,14 @@ export function VehicleInventory({
         </DialogContent>
       </Dialog>
       <Dialog open={!!confirmTarget} onOpenChange={(open) => !open && !isPending && setConfirmTarget(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[min(64rem,94vw)]">
           {confirmTarget && confirmStep === "photo" && (
             <>
               <DialogHeader>
                 <DialogTitle>¿Esta es la pieza que quieres agregar?</DialogTitle>
                 <DialogDescription>Revisa la foto para confirmar que es esa. Se agrega a {vehicleName}.</DialogDescription>
               </DialogHeader>
-              <div className="flex h-56 items-center justify-center overflow-hidden rounded-lg border bg-muted/30">
+              <div className="flex h-[min(60vh,34rem)] min-h-[22rem] items-center justify-center overflow-hidden rounded-lg border bg-muted/30">
                 {confirmTarget.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={partImageSrc(confirmTarget.partTypeId, confirmTarget.imageUrl) ?? ""} alt={confirmTarget.name} className="h-full w-full object-contain" />
@@ -628,16 +680,28 @@ export function VehicleInventory({
                   </div>
                 )}
               </div>
-              <p className="text-base font-medium">{confirmTarget.name}</p>
-              <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
-                <div className="flex gap-2">
-                  <Button type="button" variant="ghost" onClick={() => setConfirmTarget(null)}>
-                    No es esta
-                  </Button>
-                  <Button type="button" onClick={() => setConfirmStep("qty")}>
-                    Sí, es esta
-                  </Button>
-                </div>
+              <p className="text-2xl font-semibold">{confirmTarget.name}</p>
+              <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-16 text-lg font-medium"
+                  onClick={() => setConfirmTarget(null)}
+                >
+                  No es esta
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-16 gap-2 border-2 border-destructive/50 text-lg font-semibold text-destructive hover:bg-destructive/10"
+                  onClick={() => markExcluded(confirmTarget, true)}
+                >
+                  <Ban className="size-5" />
+                  No está en este auto
+                </Button>
+                <Button type="button" className="h-16 text-lg font-semibold" onClick={() => setConfirmStep("qty")}>
+                  Sí, es esta
+                </Button>
               </div>
             </>
           )}
@@ -692,7 +756,7 @@ export function VehicleInventory({
                     <Button
                       key={value}
                       type="button"
-                      size="sm"
+                      className="h-11 px-6 text-base"
                       variant={confirmCond === value ? "default" : "outline"}
                       onClick={() => setConfirmCond(value)}
                     >
@@ -701,12 +765,19 @@ export function VehicleInventory({
                   ))}
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="ghost" disabled={isPending} onClick={() => setConfirmStep("photo")}>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-14 text-lg"
+                  disabled={isPending}
+                  onClick={() => setConfirmStep("photo")}
+                >
                   Atrás
                 </Button>
                 <Button
                   type="button"
+                  className="h-14 text-lg font-semibold"
                   disabled={isPending}
                   onClick={() => save({ partTypeId: confirmTarget.partTypeId, qty: confirmQty, condition: confirmCond, size: confirmSize })}
                 >

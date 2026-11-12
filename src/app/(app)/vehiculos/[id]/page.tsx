@@ -29,6 +29,11 @@ export default async function VehiculoDetailPage({
 
   if (!vehicle) notFound();
 
+  const exclusions = await prisma.vehiclePartExclusion.findMany({
+    where: { vehicleId: vehicle.id },
+    select: { partTypeId: true },
+  });
+
   const catalog = await prisma.partType.findMany({
     where: { business: vehicle.business, catalog: true, zone: { not: null } },
     orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
@@ -125,6 +130,7 @@ export default async function VehiculoDetailPage({
 
       <VehicleInventory
         vehicleName={`${vehicle.brand} ${vehicle.model}`}
+        excludedIds={exclusions.map((x) => x.partTypeId)}
         key={[...rows.values()].map((r) => `${r.partTypeId}:${r.available}:${r.sold}:${r.price}`).join("|")}
         vehicleId={vehicle.id}
         rows={[...rows.values()]}

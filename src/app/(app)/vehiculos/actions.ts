@@ -315,6 +315,12 @@ export async function saveVehicleInventory(
         if (!vehicle) throw new Error("El vehículo ya no existe.");
         const business = vehicle.business;
 
+        // si una pieza marcada "No está" ahora sí se asigna, deja de estar excluida
+        const assigned = changes.filter((c) => c.qty > 0).map((c) => c.partTypeId);
+        if (assigned.length) {
+          await tx.vehiclePartExclusion.deleteMany({ where: { vehicleId, partTypeId: { in: assigned } } });
+        }
+
         const newParts: {
           partTypeId: string;
           categoryName: string;
@@ -486,4 +492,32 @@ export async function assignPartToVehicles(
   revalidatePath("/piezas");
   revalidatePath("/buscar");
   return { created: total };
+}
+
+/** Marca (o desmarca) que un vehículo NO trae una pieza: sale de su lista "Por asignar". */
+export async function setPartExcluded(
+  vehicleId: string,
+  partTypeId: string,
+  excluded: boolean,
+): Promise<{ error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+
+  const [vehicle, type] = await Promise.all([
+    prisma.sourceVehicle.findUnique({ where: { id: vehicleId }, select: { business: true } }),
+    prisma.partType.findUnique({ where: { id: partTypeId }, select: { business: true } }),
+  ]);
+  if (!vehicle || !type || vehicle.business !== type.business) return { error: "No encontré el vehículo o la pieza." };
+
+  if (excluded) {
+    await prisma.vehiclePartExclusion.upsert({
+      where: { vehicleId_partTypeId: { vehicleId, partTypeId } },
+      create: { vehicleId, partTypeId },
+      update: {},
+    });
+  } else {
+    await prisma.vehiclePartExclusion.deleteMany({ where: { vehicleId, partTypeId } });
+  }
+  revalidatePath(`/vehiculos/${vehicleId}`);
+  return {};
 }

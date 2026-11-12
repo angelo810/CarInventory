@@ -64,6 +64,7 @@ model SourceVehicle {
 
   parts    Part[]
   expenses Expense[]
+  exclusions VehiclePartExclusion[]
 
   @@index([business])
   @@index([brand, model, year])
@@ -98,6 +99,7 @@ model PartType {
   category        Category            @relation(fields: [categoryId], references: [id])
   compatibilities PartCompatibility[]
   parts           Part[]
+  exclusions      VehiclePartExclusion[]
 
   @@index([business])
   @@index([name])
@@ -317,4 +319,18 @@ model Quote {
   @@index([requesterId])
   @@index([status])
   @@index([createdAt])
+}
+
+// Piezas que se revisaron en un vehículo y NO trae: salen de la lista "Por asignar" de ese vehículo.
+model VehiclePartExclusion {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  partTypeId String
+  createdAt  DateTime @default(now())
+
+  vehicle  SourceVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  partType PartType      @relation(fields: [partTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, partTypeId])
+  @@index([partTypeId])
 }
